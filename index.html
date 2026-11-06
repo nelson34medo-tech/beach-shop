@@ -239,21 +239,54 @@
     </div>
   </div>
 
+  <!-- MODAL: CONFIRMAR ELIMINACIÓN -->
+  <div id="delete-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white dark:bg-gray-800 w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-center">
+      <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+        <i class="fa-solid fa-trash-can text-sm"></i>
+      </div>
+      <h3 class="font-bold text-sm text-gray-800 dark:text-gray-100">¿Eliminar prenda?</h3>
+      <p class="text-[10px] text-gray-400">Esta acción no se puede deshacer.</p>
+      <input type="hidden" id="delete-target-id">
+
+      <div class="flex space-x-2 pt-1">
+        <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-500 text-white py-1.5 rounded-xl text-xs font-bold">Eliminar</button>
+        <button onclick="closeDeleteModal()" class="px-3 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl text-xs font-semibold">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICACIONES -->
   <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-md opacity-0 transition-opacity duration-300 pointer-events-none z-50">
     <span id="toast-msg">Mensaje</span>
   </div>
 
-  <!-- JAVASCRIPT DE LA APLICACIÓN -->
-  <script>
+  <!-- FIREBASE NUBE Y LÓGICA -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Configuración Firebase Pública
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-PlaceholderKeyForGlobalSync",
+      authDomain: "boutique-shop-sync.firebaseapp.com",
+      projectId: "boutique-shop-sync",
+      storageBucket: "boutique-shop-sync.appspot.com",
+      messagingSenderId: "10982390429",
+      appId: "1:10982390429:web:c88df34ab9"
+    };
+
+    let db;
+    let auth;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'beach-shop-app';
+    const COLLECTION_PATH = `artifacts/${appId}/public/data/products`;
+
     let products = [];
     let currentMode = 'public';
     let currentCategoryFilter = 'Todos';
     let base64ImageTemp = '';
     let isAdminAuthenticated = false;
-
-    // Servidor global kvdb/api para almacenar sincronización libre de CORS
-    const API_URL = 'https://kvdb.io/4L4Qv7TjC1K77kH6Y7Lq8m/beach_shop_items';
 
     const defaultProducts = [
       {
@@ -285,77 +318,72 @@
       }
     ];
 
-    // Cargar productos al iniciar (Respaldo Local + Servidor Nube)
-    async function loadProducts() {
-      // Cargar Local Storage primero para renderizado instantáneo
-      const saved = localStorage.getItem('boutique_products_v2');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            products = parsed;
+    // Inicializar Firebase Firestore
+    async function initFirebase() {
+      try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        await signInAnonymously(auth);
+
+        // Listener en Tiempo Real
+        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snapshot) => {
+          const cloudData = [];
+          snapshot.forEach(docSnap => {
+            cloudData.push({ id: docSnap.id, ...docSnap.data() });
+          });
+
+          if (cloudData.length > 0) {
+            products = cloudData;
           } else {
+            // Cargar iniciales si la nube está vacía
+            defaultProducts.forEach(p => saveToCloud(p));
             products = [...defaultProducts];
           }
-        } catch(e) {
-          products = [...defaultProducts];
-        }
+          localStorage.setItem('boutique_products_v3', JSON.stringify(products));
+          refreshUI();
+        }, (err) => {
+          console.warn("Usando sincronizador local fallback", err);
+          loadLocalFallback();
+        });
+      } catch (e) {
+        loadLocalFallback();
+      }
+    }
+
+    function loadLocalFallback() {
+      const saved = localStorage.getItem('boutique_products_v3');
+      if (saved) {
+        try { products = JSON.parse(saved); } catch(e) { products = [...defaultProducts]; }
       } else {
         products = [...defaultProducts];
       }
       refreshUI();
-
-      // Sincronizar desde la nube
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            products = data;
-            localStorage.setItem('boutique_products_v2', JSON.stringify(products));
-            refreshUI();
-          }
-        }
-      } catch(e) {
-        console.log("Servidor local activo");
-      }
     }
 
-    async function saveProductsToLocalStorage() {
-      localStorage.setItem('boutique_products_v2', JSON.stringify(products));
+    async function saveToCloud(product) {
+      localStorage.setItem('boutique_products_v3', JSON.stringify(products));
       refreshUI();
-      showToast("Guardando...");
-
-      try {
-        await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(products)
-        });
-        showToast("¡Sincronizado globalmente!");
-      } catch(err) {
-        showToast("Guardado localmente");
+      if (db) {
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', product.id), product);
+          showToast("¡Sincronizado en la nube!");
+        } catch(e) {
+          showToast("Guardado localmente");
+        }
       }
     }
 
-    // Polling constante para sincronizar cambios de otros navegadores cada 4 segundos
-    setInterval(async () => {
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const remoteStr = JSON.stringify(data);
-            const localStr = JSON.stringify(products);
-            if (remoteStr !== localStr) {
-              products = data;
-              localStorage.setItem('boutique_products_v2', remoteStr);
-              refreshUI();
-            }
-          }
-        }
-      } catch(e){}
-    }, 4000);
+    async function removeFromCloud(productId) {
+      localStorage.setItem('boutique_products_v3', JSON.stringify(products));
+      refreshUI();
+      if (db) {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', productId));
+          showToast("Eliminado de la nube");
+        } catch(e) {}
+      }
+    }
 
     function refreshUI() {
       renderCategoryPills();
@@ -585,7 +613,7 @@
               </div>
               <div class="flex items-center space-x-1">
                 <button onclick="editProduct('${p.id}')" class="p-2 text-gray-400 hover:text-brand-500"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteProduct('${p.id}')" class="p-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="requestDeleteProduct('${p.id}')" class="p-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
 
@@ -616,7 +644,7 @@
         const currentVal = p.sizes[sizeKey];
         if (currentVal + delta >= 0) {
           p.sizes[sizeKey] += delta;
-          saveProductsToLocalStorage();
+          saveToCloud(p);
         }
       }
     };
@@ -655,25 +683,24 @@
       const existingProd = products.find(p => p.id === id);
       const image = base64ImageTemp || (existingProd ? existingProd.image : "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&auto=format&fit=crop&q=60");
 
+      const productPayload = {
+        id: id || ('prod-' + Date.now()),
+        name,
+        category,
+        price,
+        colors,
+        sizes,
+        image
+      };
+
       if (id) {
         const index = products.findIndex(p => p.id === id);
-        if (index !== -1) {
-          products[index] = { id, name, category, price, colors, sizes, image };
-        }
+        if (index !== -1) products[index] = productPayload;
       } else {
-        const newProduct = {
-          id: 'prod-' + Date.now(),
-          name,
-          category,
-          price,
-          colors,
-          sizes,
-          image
-        };
-        products.push(newProduct);
+        products.push(productPayload);
       }
 
-      saveProductsToLocalStorage();
+      saveToCloud(productPayload);
       resetForm();
       switchAdminTab('stock');
     };
@@ -703,11 +730,22 @@
       switchAdminTab('add');
     };
 
-    window.deleteProduct = function(id) {
-      if (confirm("¿Estás seguro de que deseas eliminar esta prenda del inventario?")) {
+    window.requestDeleteProduct = function(id) {
+      document.getElementById('delete-target-id').value = id;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    };
+
+    window.closeDeleteModal = function() {
+      document.getElementById('delete-modal').classList.add('hidden');
+    };
+
+    window.confirmDeleteProduct = function() {
+      const id = document.getElementById('delete-target-id').value;
+      if (id) {
         products = products.filter(p => p.id !== id);
-        saveProductsToLocalStorage();
+        removeFromCloud(id);
       }
+      closeDeleteModal();
     };
 
     window.resetForm = function() {
@@ -727,9 +765,9 @@
       }, 2500);
     };
 
-    // INICIALIZACIÓN DE VISTA
+    // INICIALIZACIÓN
     window.addEventListener('DOMContentLoaded', () => {
-      loadProducts();
+      initFirebase();
       setMode('public');
     });
   </script>
