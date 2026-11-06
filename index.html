@@ -11,10 +11,6 @@
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -256,106 +252,110 @@
     let base64ImageTemp = '';
     let isAdminAuthenticated = false;
 
-    // Configuración de Firebase Firestore (Base de datos en tiempo real)
-    const firebaseConfig = {
-      apiKey: "AIzaSyAsFakeKeyForClientOnlyToInit",
-      authDomain: "boutique-app-cloud.firebaseapp.com",
-      projectId: "boutique-app-cloud",
-      storageBucket: "boutique-app-cloud.appspot.com",
-      messagingSenderId: "109876543210",
-      appId: "1:109876543210:web:abcdef123456789"
-    };
+    // Servidor global kvdb/api para almacenar sincronización libre de CORS
+    const API_URL = 'https://kvdb.io/4L4Qv7TjC1K77kH6Y7Lq8m/beach_shop_items';
 
-    let db = null;
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-    } catch (e) {
-      console.warn("Usando sincronización en tiempo real basada en red alternativa", e);
-    }
-
-    // Canal de sincronización en tiempo real para todos los navegadores
-    const syncChannel = new BroadcastChannel('boutique_live_sync');
-    syncChannel.onmessage = (event) => {
-      if (event.data && event.data.type === 'PRODUCTS_UPDATED') {
-        products = event.data.products;
-        localStorage.setItem('boutique_products_v1', JSON.stringify(products));
-        refreshUI();
+    const defaultProducts = [
+      {
+        id: "prod-1",
+        name: "Vestido Midi Floreado",
+        category: "Vestidos",
+        price: 28.50,
+        colors: ["Rosado", "Blanco"],
+        sizes: { XS: 0, S: 3, M: 5, L: 2, XL: 0, Unique: 0 },
+        image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&auto=format&fit=crop&q=60"
+      },
+      {
+        id: "prod-2",
+        name: "Blusa Satinada Elegante",
+        category: "Blusas/Tops",
+        price: 18.00,
+        colors: ["Champagne", "Negro"],
+        sizes: { XS: 1, S: 4, M: 2, L: 0, XL: 0, Unique: 0 },
+        image: "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&auto=format&fit=crop&q=60"
+      },
+      {
+        id: "prod-3",
+        name: "Jeans Mom Fit Tiro Alto",
+        category: "Pantalones",
+        price: 32.00,
+        colors: ["Azul Claro", "Azul Oscuro"],
+        sizes: { XS: 2, S: 6, M: 4, L: 3, XL: 1, Unique: 0 },
+        image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=60"
       }
-    };
+    ];
 
-    // Escuchar cambios guardados globalmente mediante localStorage event (para otros navegadores en el mismo equipo/dispositivo)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'boutique_products_v1' && e.newValue) {
-        try {
-          products = JSON.parse(e.newValue);
-          refreshUI();
-        } catch(err){}
-      }
-    });
-
-    // Cargar productos al iniciar
-    function loadProducts() {
-      const saved = localStorage.getItem('boutique_products_v1');
+    // Cargar productos al iniciar (Respaldo Local + Servidor Nube)
+    async function loadProducts() {
+      // Cargar Local Storage primero para renderizado instantáneo
+      const saved = localStorage.getItem('boutique_products_v2');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             products = parsed;
           } else {
-            loadDefaultProducts();
+            products = [...defaultProducts];
           }
-        } catch (e) {
-          loadDefaultProducts();
+        } catch(e) {
+          products = [...defaultProducts];
         }
       } else {
-        loadDefaultProducts();
+        products = [...defaultProducts];
       }
       refreshUI();
-    }
 
-    function saveProductsToLocalStorage() {
-      localStorage.setItem('boutique_products_v1', JSON.stringify(products));
-      // Notificar a otras pestañas/navegadores abiertos en vivo
+      // Sincronizar desde la nube
       try {
-        syncChannel.postMessage({ type: 'PRODUCTS_UPDATED', products });
-      } catch(e){}
-      refreshUI();
-      showToast("Cambios sincronizados correctamente");
+        const res = await fetch(API_URL);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            products = data;
+            localStorage.setItem('boutique_products_v2', JSON.stringify(products));
+            refreshUI();
+          }
+        }
+      } catch(e) {
+        console.log("Servidor local activo");
+      }
     }
 
-    function loadDefaultProducts() {
-      products = [
-        {
-          id: "prod-1",
-          name: "Vestido Midi Floreado",
-          category: "Vestidos",
-          price: 28.50,
-          colors: ["Rosado", "Blanco"],
-          sizes: { XS: 0, S: 3, M: 5, L: 2, XL: 0, Unique: 0 },
-          image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&auto=format&fit=crop&q=60"
-        },
-        {
-          id: "prod-2",
-          name: "Blusa Satinada Elegante",
-          category: "Blusas/Tops",
-          price: 18.00,
-          colors: ["Champagne", "Negro"],
-          sizes: { XS: 1, S: 4, M: 2, L: 0, XL: 0, Unique: 0 },
-          image: "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&auto=format&fit=crop&q=60"
-        },
-        {
-          id: "prod-3",
-          name: "Jeans Mom Fit Tiro Alto",
-          category: "Pantalones",
-          price: 32.00,
-          colors: ["Azul Claro", "Azul Oscuro"],
-          sizes: { XS: 2, S: 6, M: 4, L: 3, XL: 1, Unique: 0 },
-          image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=60"
-        }
-      ];
-      localStorage.setItem('boutique_products_v1', JSON.stringify(products));
+    async function saveProductsToLocalStorage() {
+      localStorage.setItem('boutique_products_v2', JSON.stringify(products));
+      refreshUI();
+      showToast("Guardando...");
+
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(products)
+        });
+        showToast("¡Sincronizado globalmente!");
+      } catch(err) {
+        showToast("Guardado localmente");
+      }
     }
+
+    // Polling constante para sincronizar cambios de otros navegadores cada 4 segundos
+    setInterval(async () => {
+      try {
+        const res = await fetch(API_URL);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const remoteStr = JSON.stringify(data);
+            const localStr = JSON.stringify(products);
+            if (remoteStr !== localStr) {
+              products = data;
+              localStorage.setItem('boutique_products_v2', remoteStr);
+              refreshUI();
+            }
+          }
+        }
+      } catch(e){}
+    }, 4000);
 
     function refreshUI() {
       renderCategoryPills();
@@ -477,7 +477,7 @@
 
       if (filtered.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-2 text-center py-8 text-gray-400">
+          <div class="col-span-4 text-center py-8 text-gray-400">
             <i class="fa-solid fa-shirt text-3xl mb-2 opacity-50"></i>
             <p class="text-xs">No se encontraron prendas disponibles.</p>
           </div>
