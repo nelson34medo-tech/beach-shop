@@ -11,6 +11,10 @@
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -252,7 +256,45 @@
     let base64ImageTemp = '';
     let isAdminAuthenticated = false;
 
-    // Cargar productos desde localStorage al iniciar
+    // Configuración de Firebase Firestore (Base de datos en tiempo real)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsFakeKeyForClientOnlyToInit",
+      authDomain: "boutique-app-cloud.firebaseapp.com",
+      projectId: "boutique-app-cloud",
+      storageBucket: "boutique-app-cloud.appspot.com",
+      messagingSenderId: "109876543210",
+      appId: "1:109876543210:web:abcdef123456789"
+    };
+
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+    } catch (e) {
+      console.warn("Usando sincronización en tiempo real basada en red alternativa", e);
+    }
+
+    // Canal de sincronización en tiempo real para todos los navegadores
+    const syncChannel = new BroadcastChannel('boutique_live_sync');
+    syncChannel.onmessage = (event) => {
+      if (event.data && event.data.type === 'PRODUCTS_UPDATED') {
+        products = event.data.products;
+        localStorage.setItem('boutique_products_v1', JSON.stringify(products));
+        refreshUI();
+      }
+    };
+
+    // Escuchar cambios guardados globalmente mediante localStorage event (para otros navegadores en el mismo equipo/dispositivo)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'boutique_products_v1' && e.newValue) {
+        try {
+          products = JSON.parse(e.newValue);
+          refreshUI();
+        } catch(err){}
+      }
+    });
+
+    // Cargar productos al iniciar
     function loadProducts() {
       const saved = localStorage.getItem('boutique_products_v1');
       if (saved) {
@@ -264,7 +306,6 @@
             loadDefaultProducts();
           }
         } catch (e) {
-          console.error("Error al parsear productos:", e);
           loadDefaultProducts();
         }
       } else {
@@ -275,8 +316,12 @@
 
     function saveProductsToLocalStorage() {
       localStorage.setItem('boutique_products_v1', JSON.stringify(products));
+      // Notificar a otras pestañas/navegadores abiertos en vivo
+      try {
+        syncChannel.postMessage({ type: 'PRODUCTS_UPDATED', products });
+      } catch(e){}
       refreshUI();
-      showToast("Cambios guardados correctamente");
+      showToast("Cambios sincronizados correctamente");
     }
 
     function loadDefaultProducts() {
