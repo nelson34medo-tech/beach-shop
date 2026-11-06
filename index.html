@@ -553,8 +553,12 @@
     };
 
     window.shareCatalogWhatsApp = function() {
-      const currentUrl = window.location.href;
-      const message = `¡Hola! Te comparto nuestro catálogo de prendas disponibles en la boutique. Puedes revisarlo y elegir tus favoritas aquí: ✨\n\n${currentUrl}`;
+      const currentUrl = window.location.href.split('#')[0];
+      // Codificamos los productos actuales en la URL para enviarlos en el mensaje
+      const compressedData = encodeURIComponent(JSON.stringify(products));
+      const shareLink = `${currentUrl}#data=${compressedData}`;
+      
+      const message = `¡Hola! Te comparto nuestro catálogo actualizado de prendas disponibles en la boutique. Puedes revisarlo aquí: ✨\n\n${shareLink}`;
       const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
     };
@@ -760,6 +764,19 @@
 
     // INICIALIZACIÓN
     window.addEventListener('DOMContentLoaded', () => {
+      // Comprobar si vienen datos por la URL compartida
+      const hash = window.location.hash;
+      if (hash.includes('#data=')) {
+        try {
+          const jsonString = decodeURIComponent(hash.split('#data=')[1]);
+          const remoteProducts = JSON.parse(jsonString);
+          if (Array.isArray(remoteProducts) && remoteProducts.length > 0) {
+            products = remoteProducts;
+            localStorage.setItem('boutique_products_v7', JSON.stringify(products));
+          }
+        } catch(e) {}
+      }
+      
       initStorage();
       setMode('public');
     });
