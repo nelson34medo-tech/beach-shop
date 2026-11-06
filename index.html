@@ -321,7 +321,20 @@
     async function initFirebase() {
       loadLocalFallback();
 
-      // Sincronización en tiempo real entre múltiples pestañas y navegadores del mismo dispositivo / red
+      // Sincronización automática periódica cada 1 segundo y entre pestañas
+      setInterval(() => {
+        const saved = localStorage.getItem('boutique_products_v7');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (JSON.stringify(parsed) !== JSON.stringify(products)) {
+              products = parsed;
+              refreshUI();
+            }
+          } catch(e) {}
+        }
+      }, 1000);
+
       window.addEventListener('storage', (e) => {
         if (e.key === 'boutique_products_v7') {
           try {
