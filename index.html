@@ -261,26 +261,8 @@
     <span id="toast-msg">Mensaje</span>
   </div>
 
-  <!-- FIREBASE NUBE Y LÓGICA -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Configuración Firebase Pública
-    const firebaseConfig = {
-      apiKey: "AIzaSyD-PlaceholderKeyForGlobalSync",
-      authDomain: "boutique-shop-sync.firebaseapp.com",
-      projectId: "boutique-shop-sync",
-      storageBucket: "boutique-shop-sync.appspot.com",
-      messagingSenderId: "10982390429",
-      appId: "1:10982390429:web:c88df34ab9"
-    };
-
-    let db;
-    let auth;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'beach-shop-app';
-
+  <!-- LÓGICA DE DATOS Y SINCRONIZACIÓN -->
+  <script>
     let products = [];
     let currentMode = 'public';
     let currentCategoryFilter = 'Todos';
@@ -317,9 +299,8 @@
       }
     ];
 
-    // Inicializar sincronización local y de eventos de red instantáneos
-    async function initFirebase() {
-      loadLocalFallback();
+    async function initStorage() {
+      loadLocalData();
 
       // Sincronización automática periódica cada 1 segundo y entre pestañas
       setInterval(() => {
@@ -347,7 +328,7 @@
       });
     }
 
-    function loadLocalFallback() {
+    function loadLocalData() {
       const saved = localStorage.getItem('boutique_products_v7');
       if (saved) {
         try { products = JSON.parse(saved); } catch(e) { products = [...defaultProducts]; }
@@ -357,16 +338,10 @@
       refreshUI();
     }
 
-    async function saveToCloud(product) {
+    function saveAndSync() {
       localStorage.setItem('boutique_products_v7', JSON.stringify(products));
       refreshUI();
       showToast("¡Guardado correctamente!");
-    }
-
-    async function removeFromCloud(productId) {
-      localStorage.setItem('boutique_products_v7', JSON.stringify(products));
-      refreshUI();
-      showToast("Prenda eliminada");
     }
 
     function refreshUI() {
@@ -628,7 +603,7 @@
         const currentVal = p.sizes[sizeKey];
         if (currentVal + delta >= 0) {
           p.sizes[sizeKey] += delta;
-          saveToCloud(p);
+          saveAndSync();
         }
       }
     };
@@ -684,7 +659,7 @@
         products.push(productPayload);
       }
 
-      saveToCloud(productPayload);
+      saveAndSync();
       resetForm();
       switchAdminTab('stock');
     };
@@ -727,7 +702,8 @@
       const id = document.getElementById('delete-target-id').value;
       if (id) {
         products = products.filter(p => p.id !== id);
-        removeFromCloud(id);
+        saveAndSync();
+        showToast("Prenda eliminada");
       }
       closeDeleteModal();
     };
@@ -751,7 +727,7 @@
 
     // INICIALIZACIÓN
     window.addEventListener('DOMContentLoaded', () => {
-      initFirebase();
+      initStorage();
       setMode('public');
     });
   </script>
