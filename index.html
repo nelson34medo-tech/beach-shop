@@ -49,11 +49,19 @@
         </div>
       </div>
       
-      <!-- BOTÓN DE CAMBIO DE MODO -->
-      <button onclick="requestAdminAccess()" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 transition-colors flex items-center space-x-1">
-        <i class="fa-solid fa-user-lock text-brand-500"></i>
-        <span id="mode-btn-text">Modo Admin</span>
-      </button>
+      <div class="flex items-center space-x-2">
+        <!-- BOTÓN COMPARTIR WHATSAPP CATÁLOGO -->
+        <button onclick="shareCatalogWhatsApp()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors flex items-center space-x-1 shadow-sm">
+          <i class="fa-brands fa-whatsapp text-sm"></i>
+          <span>Enviar Catálogo</span>
+        </button>
+
+        <!-- BOTÓN DE CAMBIO DE MODO -->
+        <button onclick="requestAdminAccess()" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 transition-colors flex items-center space-x-1">
+          <i class="fa-solid fa-user-lock text-brand-500"></i>
+          <span id="mode-btn-text">Modo Admin</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -216,6 +224,13 @@
           <span class="text-[10px] font-semibold text-gray-400 block mb-1">Stock disponible por Talla:</span>
           <div id="modal-sizes" class="grid grid-cols-3 gap-2"></div>
         </div>
+
+        <div class="pt-2">
+          <button id="modal-whatsapp-btn" onclick="orderProductWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2">
+            <i class="fa-brands fa-whatsapp text-sm"></i>
+            <span>Pedir por WhatsApp</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -268,6 +283,7 @@
     let currentCategoryFilter = 'Todos';
     let base64ImageTemp = '';
     let isAdminAuthenticated = false;
+    let selectedProductIdForOrder = null;
 
     const defaultProducts = [
       {
@@ -501,6 +517,7 @@
       const p = products.find(prod => prod.id === id);
       if (!p) return;
 
+      selectedProductIdForOrder = id;
       document.getElementById('modal-img').src = p.image;
       document.getElementById('modal-category').textContent = p.category;
       document.getElementById('modal-title').textContent = p.name;
@@ -524,6 +541,21 @@
 
     window.closeModal = function() {
       document.getElementById('product-modal').classList.add('hidden');
+      selectedProductIdForOrder = null;
+    };
+
+    window.orderProductWhatsApp = function() {
+      const p = products.find(prod => prod.id === selectedProductIdForOrder);
+      if (!p) return;
+      const message = `¡Hola! Me interesa la prenda *${p.name}* (${p.category}) con un precio de *$${p.price.toFixed(2)}*. ¿Está disponible?`;
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    };
+
+    window.shareCatalogWhatsApp = function() {
+      const message = `¡Hola! Te comparto nuestro catálogo de prendas disponibles en la boutique. Puedes revisarlo y elegir tus favoritas. ✨`;
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
     };
 
     // MODO ADMINISTRADOR
