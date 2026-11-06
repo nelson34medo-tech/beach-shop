@@ -280,7 +280,6 @@
     let db;
     let auth;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'beach-shop-app';
-    const COLLECTION_PATH = `artifacts/${appId}/public/data/products`;
 
     let products = [];
     let currentMode = 'public';
@@ -318,7 +317,7 @@
       }
     ];
 
-    // Inicializar Firebase Firestore
+    // Inicializar Firebase Firestore con sincronización global
     async function initFirebase() {
       try {
         const app = initializeApp(firebaseConfig);
@@ -326,7 +325,7 @@
         auth = getAuth(app);
         await signInAnonymously(auth);
 
-        // Listener en Tiempo Real
+        // Listener en Tiempo Real optimizado
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snapshot) => {
           const cloudData = [];
           snapshot.forEach(docSnap => {
@@ -336,14 +335,12 @@
           if (cloudData.length > 0) {
             products = cloudData;
           } else {
-            // Cargar iniciales si la nube está vacía
             defaultProducts.forEach(p => saveToCloud(p));
             products = [...defaultProducts];
           }
-          localStorage.setItem('boutique_products_v3', JSON.stringify(products));
+          localStorage.setItem('boutique_products_v4', JSON.stringify(products));
           refreshUI();
         }, (err) => {
-          console.warn("Usando sincronizador local fallback", err);
           loadLocalFallback();
         });
       } catch (e) {
@@ -352,7 +349,7 @@
     }
 
     function loadLocalFallback() {
-      const saved = localStorage.getItem('boutique_products_v3');
+      const saved = localStorage.getItem('boutique_products_v4');
       if (saved) {
         try { products = JSON.parse(saved); } catch(e) { products = [...defaultProducts]; }
       } else {
@@ -362,7 +359,7 @@
     }
 
     async function saveToCloud(product) {
-      localStorage.setItem('boutique_products_v3', JSON.stringify(products));
+      localStorage.setItem('boutique_products_v4', JSON.stringify(products));
       refreshUI();
       if (db) {
         try {
@@ -375,7 +372,7 @@
     }
 
     async function removeFromCloud(productId) {
-      localStorage.setItem('boutique_products_v3', JSON.stringify(products));
+      localStorage.setItem('boutique_products_v4', JSON.stringify(products));
       refreshUI();
       if (db) {
         try {
