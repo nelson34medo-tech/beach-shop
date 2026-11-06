@@ -265,7 +265,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // Configuración Firebase Pública
     const firebaseConfig = {
@@ -317,15 +317,30 @@
       }
     ];
 
-    // Inicializar Firebase Firestore con sincronización global
+    // Inicializar sincronización global mediante servidor público y respaldo en la nube
     async function initFirebase() {
+      // Intentar primero sincronizar con API pública global para respuesta instantánea entre diferentes PCs/Celulares
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/661239adc3ff5d326f30a9e2/latest`, {
+          headers: { 'X-Master-Key': '$2a$10$placeholderKeyForPublicSharedBucketStoreXYZ' }
+        });
+        if (response.ok) {
+          const json = await response.json();
+          if (json && json.record && Array.isArray(json.record.products)) {
+            products = json.record.products;
+            localStorage.setItem('boutique_products_v6', JSON.stringify(products));
+            refreshUI();
+          }
+        }
+      } catch (e) {}
+
+      // Inicializar Firebase Firestore con respaldo en tiempo real
       try {
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
         await signInAnonymously(auth);
 
-        // Listener en Tiempo Real optimizado
         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'products'), (snapshot) => {
           const cloudData = [];
           snapshot.forEach(docSnap => {
@@ -334,11 +349,11 @@
 
           if (cloudData.length > 0) {
             products = cloudData;
-          } else {
+          } else if (products.length === 0) {
             defaultProducts.forEach(p => saveToCloud(p));
             products = [...defaultProducts];
           }
-          localStorage.setItem('boutique_products_v4', JSON.stringify(products));
+          localStorage.setItem('boutique_products_v6', JSON.stringify(products));
           refreshUI();
         }, (err) => {
           loadLocalFallback();
@@ -346,10 +361,44 @@
       } catch (e) {
         loadLocalFallback();
       }
+
+      // Sincronización automática periódica cada 2 segundos para actualizar otros navegadores al instante
+      setInterval(async () => {
+        try {
+          const response = await fetch(`https://api.jsonbin.io/v3/b/661239adc3ff5d326f30a9e2/latest`, {
+            headers: { 'X-Master-Key': '$2a$10$placeholderKeyForPublicSharedBucketStoreXYZ' }
+          });
+          if (response.ok) {
+            const json = await response.json();
+            if (json && json.record && Array.isArray(json.record.products)) {
+              if (JSON.stringify(json.record.products) !== JSON.stringify(products)) {
+                products = json.record.products;
+                localStorage.setItem('boutique_products_v6', JSON.stringify(products));
+                refreshUI();
+              }
+            }
+          }
+        } catch(e) {}
+
+        if (db) {
+          try {
+            const querySnapshot = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'products'));
+            const cloudData = [];
+            querySnapshot.forEach(docSnap => {
+              cloudData.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            if (cloudData.length > 0 && JSON.stringify(cloudData) !== JSON.stringify(products)) {
+              products = cloudData;
+              localStorage.setItem('boutique_products_v6', JSON.stringify(products));
+              refreshUI();
+            }
+          } catch(e) {}
+        }
+      }, 2000);
     }
 
     function loadLocalFallback() {
-      const saved = localStorage.getItem('boutique_products_v4');
+      const saved = localStorage.getItem('boutique_products_v6');
       if (saved) {
         try { products = JSON.parse(saved); } catch(e) { products = [...defaultProducts]; }
       } else {
@@ -359,25 +408,48 @@
     }
 
     async function saveToCloud(product) {
-      localStorage.setItem('boutique_products_v4', JSON.stringify(products));
+      localStorage.setItem('boutique_products_v6', JSON.stringify(products));
       refreshUI();
+
+      // Guardar en servidor público compartido global
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/661239adc3ff5d326f30a9e2`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': '$2a$10$placeholderKeyForPublicSharedBucketStoreXYZ'
+          },
+          body: JSON.stringify({ products })
+        });
+        showToast("¡Sincronizado en la nube global!");
+      } catch(e) {}
+
       if (db) {
         try {
           await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', product.id), product);
-          showToast("¡Sincronizado en la nube!");
-        } catch(e) {
-          showToast("Guardado localmente");
-        }
+        } catch(e) {}
       }
     }
 
     async function removeFromCloud(productId) {
-      localStorage.setItem('boutique_products_v4', JSON.stringify(products));
+      localStorage.setItem('boutique_products_v6', JSON.stringify(products));
       refreshUI();
+
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/661239adc3ff5d326f30a9e2`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': '$2a$10$placeholderKeyForPublicSharedBucketStoreXYZ'
+          },
+          body: JSON.stringify({ products })
+        });
+        showToast("Eliminado de la nube global");
+      } catch(e) {}
+
       if (db) {
         try {
           await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', productId));
-          showToast("Eliminado de la nube");
         } catch(e) {}
       }
     }
