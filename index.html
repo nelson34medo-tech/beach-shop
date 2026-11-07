@@ -51,7 +51,7 @@
       
       <div class="flex items-center space-x-2">
         <!-- BOTÓN COMPARTIR WHATSAPP CATÁLOGO -->
-        <button onclick="shareCatalogWhatsApp()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors flex items-center space-x-1 shadow-sm">
+        <button onclick="openShareModal()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors flex items-center space-x-1 shadow-sm">
           <i class="fa-brands fa-whatsapp text-sm"></i>
           <span>Enviar Catálogo</span>
         </button>
@@ -274,6 +274,36 @@
   <!-- TOAST NOTIFICACIONES -->
   <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-md opacity-0 transition-opacity duration-300 pointer-events-none z-50">
     <span id="toast-msg">Mensaje</span>
+  </div>
+
+  <!-- MODAL: COMPARTIR CATÁLOGO (EVITA ERRORES DE RED) -->
+  <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 text-center">
+      <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-lg">
+        <i class="fa-brands fa-whatsapp"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-sm text-gray-900 dark:text-white">Compartir Catálogo</h3>
+        <p class="text-[11px] text-gray-400 mt-0.5">Copia el enlace de tu tienda o ábrelo directamente en WhatsApp.</p>
+      </div>
+
+      <div class="space-y-2">
+        <input type="text" id="share-link-input" readonly class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs text-center font-mono text-gray-600 dark:text-gray-300 select-all" onclick="this.select()">
+        
+        <div class="flex space-x-2 pt-1">
+          <button onclick="copyShareLink()" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-copy"></i>
+            <span>Copiar Enlace</span>
+          </button>
+          <button onclick="sendDirectWhatsApp()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>Abrir WhatsApp</span>
+          </button>
+        </div>
+      </div>
+
+      <button onclick="closeShareModal()" class="text-xs font-semibold text-gray-400 hover:text-gray-600 pt-1">Cerrar</button>
+    </div>
   </div>
 
   <!-- LÓGICA DE DATOS Y SINCRONIZACIÓN -->
@@ -552,15 +582,39 @@
       window.open(url, '_blank');
     };
 
-    window.shareCatalogWhatsApp = function() {
-      const currentUrl = window.location.href.split('#')[0];
-      // Codificamos los productos actuales en la URL para enviarlos en el mensaje
-      const compressedData = encodeURIComponent(JSON.stringify(products));
-      const shareLink = `${currentUrl}#data=${compressedData}`;
+    window.openShareModal = function() {
+      const cleanUrl = window.location.href.split('#')[0].split('?')[0];
+      document.getElementById('share-link-input').value = cleanUrl;
+      document.getElementById('share-modal').classList.remove('hidden');
+    };
+
+    window.closeShareModal = function() {
+      document.getElementById('share-modal').classList.add('hidden');
+    };
+
+    window.copyShareLink = function() {
+      const input = document.getElementById('share-link-input');
+      input.select();
+      input.setSelectionRange(0, 99999);
       
-      const message = `¡Hola! Te comparto nuestro catálogo actualizado de prendas disponibles en la boutique. Puedes revisarlo aquí: ✨\n\n${shareLink}`;
-      const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      try {
+        document.execCommand('copy');
+        showToast("¡Enlace copiado al portapapeles!");
+      } catch (err) {
+        showToast("No se pudo copiar automáticamente");
+      }
+    };
+
+    window.sendDirectWhatsApp = function() {
+      const cleanUrl = window.location.href.split('#')[0].split('?')[0];
+      const message = `¡Hola! Te comparto el catálogo digital de nuestra boutique con todas las prendas disponibles. Puedes revisarlo aquí: ✨\n\n${cleanUrl}`;
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
+      closeShareModal();
+    };
+
+    window.shareCatalogWhatsApp = function() {
+      openShareModal();
     };
 
     // MODO ADMINISTRADOR
