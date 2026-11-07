@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- html2canvas para exportar como imagen -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -45,33 +47,39 @@
         </div>
         <div>
           <h1 class="font-extrabold text-sm text-gray-900 dark:text-white leading-none">Mi Boutique</h1>
-          <span id="header-mode-badge" class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-600 font-semibold">Catálogo Público</span>
+          <span id="header-mode-badge" class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-600 font-semibold">Catálogo Revista</span>
         </div>
       </div>
       
       <div class="flex items-center space-x-2">
-        <!-- BOTÓN COMPARTIR WHATSAPP CATÁLOGO -->
-        <button onclick="openShareModal()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors flex items-center space-x-1 shadow-sm">
-          <i class="fa-brands fa-whatsapp text-sm"></i>
-          <span>Enviar Catálogo</span>
+        <!-- BOTÓN EXPORTAR REVISTA (IMAGEN) -->
+        <button onclick="exportCatalogAsImage()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white shadow-sm transition-all flex items-center space-x-1">
+          <i class="fa-solid fa-camera text-xs"></i>
+          <span>Exportar Revista</span>
         </button>
 
         <!-- BOTÓN DE CAMBIO DE MODO -->
         <button onclick="requestAdminAccess()" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 transition-colors flex items-center space-x-1">
           <i class="fa-solid fa-user-lock text-brand-500"></i>
-          <span id="mode-btn-text">Modo Admin</span>
+          <span id="mode-btn-text">Admin</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <main class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-6">
+  <!-- CONTENIDO PRINCIPAL (ZONA CAPTURABLE PARA LA REVISTA) -->
+  <main id="magazine-container" class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
     
+    <!-- CABECERA ESTILO REVISTA -->
+    <div id="magazine-header-banner" class="hidden text-center py-6 mb-4 border-b border-gray-200 dark:border-gray-800">
+      <h2 class="text-2xl font-black uppercase tracking-widest text-brand-600 dark:text-brand-400">Catálogo Exclusivo - Mi Boutique</h2>
+      <p class="text-xs text-gray-500 mt-1">Novedades y prendas disponibles al instante</p>
+    </div>
+
     <!-- VISTA 1: CATÁLOGO PÚBLICO -->
     <div id="view-public" class="space-y-6">
       <!-- Buscador y Filtros -->
-      <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
+      <div class="flex flex-col md:flex-row gap-3 items-center justify-between no-export">
         <div class="relative w-full md:w-80">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-gray-400 text-xs"></i>
           <input type="text" id="public-search" oninput="renderPublicCatalog()" placeholder="Buscar prendas..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
@@ -224,13 +232,6 @@
           <span class="text-[10px] font-semibold text-gray-400 block mb-1">Stock disponible por Talla:</span>
           <div id="modal-sizes" class="grid grid-cols-3 gap-2"></div>
         </div>
-
-        <div class="pt-2">
-          <button id="modal-whatsapp-btn" onclick="orderProductWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2">
-            <i class="fa-brands fa-whatsapp text-sm"></i>
-            <span>Pedir por WhatsApp</span>
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -276,44 +277,13 @@
     <span id="toast-msg">Mensaje</span>
   </div>
 
-  <!-- MODAL: COMPARTIR CATÁLOGO (EVITA ERRORES DE RED) -->
-  <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 text-center">
-      <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-lg">
-        <i class="fa-brands fa-whatsapp"></i>
-      </div>
-      <div>
-        <h3 class="font-extrabold text-sm text-gray-900 dark:text-white">Compartir Catálogo</h3>
-        <p class="text-[11px] text-gray-400 mt-0.5">Copia el enlace de tu tienda o ábrelo directamente en WhatsApp.</p>
-      </div>
-
-      <div class="space-y-2">
-        <input type="text" id="share-link-input" readonly class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs text-center font-mono text-gray-600 dark:text-gray-300 select-all" onclick="this.select()">
-        
-        <div class="flex space-x-2 pt-1">
-          <button onclick="copyShareLink()" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1">
-            <i class="fa-solid fa-copy"></i>
-            <span>Copiar Enlace</span>
-          </button>
-          <button onclick="sendDirectWhatsApp()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1">
-            <i class="fa-brands fa-whatsapp"></i>
-            <span>Abrir WhatsApp</span>
-          </button>
-        </div>
-      </div>
-
-      <button onclick="closeShareModal()" class="text-xs font-semibold text-gray-400 hover:text-gray-600 pt-1">Cerrar</button>
-    </div>
-  </div>
-
-  <!-- LÓGICA DE DATOS Y SINCRONIZACIÓN -->
+  <!-- LÓGICA DE DATOS Y EXPORTACIÓN DE REVISTA -->
   <script>
     let products = [];
     let currentMode = 'public';
     let currentCategoryFilter = 'Todos';
     let base64ImageTemp = '';
     let isAdminAuthenticated = false;
-    let selectedProductIdForOrder = null;
 
     const defaultProducts = [
       {
@@ -348,7 +318,6 @@
     async function initStorage() {
       loadLocalData();
 
-      // Sincronización automática periódica cada 1 segundo y entre pestañas
       setInterval(() => {
         const saved = localStorage.getItem('boutique_products_v7');
         if (saved) {
@@ -361,17 +330,6 @@
           } catch(e) {}
         }
       }, 1000);
-
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'boutique_products_v7') {
-          try {
-            if (e.newValue) {
-              products = JSON.parse(e.newValue);
-              refreshUI();
-            }
-          } catch(err) {}
-        }
-      });
     }
 
     function loadLocalData() {
@@ -395,6 +353,38 @@
       renderPublicCatalog();
       renderAdminInventory();
     }
+
+    // EXPORTAR COMO REVISTA (IMAGEN)
+    window.exportCatalogAsImage = function() {
+      showToast("Generando revista digital...");
+      const banner = document.getElementById('magazine-header-banner');
+      if (banner) banner.classList.remove('hidden');
+
+      // Asegurarse de estar en modo público para la foto limpia
+      const oldMode = currentMode;
+      if (oldMode !== 'public') setMode('public');
+
+      const container = document.getElementById('magazine-container');
+      
+      html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f9fafb'
+      }).then(canvas => {
+        if (banner) banner.classList.add('hidden');
+        if (oldMode !== 'public') setMode(oldMode);
+
+        const link = document.createElement('a');
+        link.download = 'Catalogo-MiBoutique.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast("¡Revista exportada con éxito!");
+      }).catch(err => {
+        if (banner) banner.classList.add('hidden');
+        if (oldMode !== 'public') setMode(oldMode);
+        showToast("Error al exportar imagen");
+      });
+    };
 
     // NAVEGACIÓN Y CONTRASEÑA ADMIN
     window.requestAdminAccess = function() {
@@ -446,7 +436,7 @@
 
           if (btnPublic) btnPublic.className = "flex flex-col items-center space-y-0.5 text-brand-500";
           if (btnAdmin) btnAdmin.className = "flex flex-col items-center space-y-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200";
-          if (modeBtnText) modeBtnText.textContent = "Modo Admin";
+          if (modeBtnText) modeBtnText.textContent = "Admin";
         } else {
           viewPublic.classList.add('hidden');
           viewAdmin.classList.remove('hidden');
@@ -463,7 +453,7 @@
       const badge = document.getElementById('header-mode-badge');
       if (badge) {
         if (currentMode === 'public') {
-          badge.textContent = "Catálogo Público";
+          badge.textContent = "Catálogo Revista";
           badge.className = "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-600 dark:bg-brand-900/50 dark:text-brand-300 font-semibold";
         } else {
           badge.textContent = "Administración";
@@ -522,7 +512,7 @@
         const totalStock = Object.values(p.sizes || {}).reduce((a, b) => a + b, 0);
         const inStock = totalStock > 0;
         return `
-          <div onclick="openProductModal('${p.id}')" class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col cursor-pointer hover:shadow-md transition-all active:scale-98">
+          <div onclick="openProductModal('${p.id}')" class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col cursor-pointer hover:shadow-md transition-all">
             <div class="relative h-40 bg-gray-100 dark:bg-gray-900 overflow-hidden">
               <img src="${p.image}" class="w-full h-full object-cover">
               ${!inStock ? '<span class="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Agotado</span>' : ''}
@@ -544,10 +534,10 @@
 
     // MODAL DETALLES
     window.openProductModal = function(id) {
+      if (currentMode === 'admin') return;
       const p = products.find(prod => prod.id === id);
       if (!p) return;
 
-      selectedProductIdForOrder = id;
       document.getElementById('modal-img').src = p.image;
       document.getElementById('modal-category').textContent = p.category;
       document.getElementById('modal-title').textContent = p.name;
@@ -571,50 +561,6 @@
 
     window.closeModal = function() {
       document.getElementById('product-modal').classList.add('hidden');
-      selectedProductIdForOrder = null;
-    };
-
-    window.orderProductWhatsApp = function() {
-      const p = products.find(prod => prod.id === selectedProductIdForOrder);
-      if (!p) return;
-      const message = `¡Hola! Me interesa la prenda *${p.name}* (${p.category}) con un precio de *$${p.price.toFixed(2)}*. ¿Está disponible?`;
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-    };
-
-    window.openShareModal = function() {
-      const cleanUrl = window.location.href.split('#')[0].split('?')[0];
-      document.getElementById('share-link-input').value = cleanUrl;
-      document.getElementById('share-modal').classList.remove('hidden');
-    };
-
-    window.closeShareModal = function() {
-      document.getElementById('share-modal').classList.add('hidden');
-    };
-
-    window.copyShareLink = function() {
-      const input = document.getElementById('share-link-input');
-      input.select();
-      input.setSelectionRange(0, 99999);
-      
-      try {
-        document.execCommand('copy');
-        showToast("¡Enlace copiado al portapapeles!");
-      } catch (err) {
-        showToast("No se pudo copiar automáticamente");
-      }
-    };
-
-    window.sendDirectWhatsApp = function() {
-      const cleanUrl = window.location.href.split('#')[0].split('?')[0];
-      const message = `¡Hola! Te comparto el catálogo digital de nuestra boutique con todas las prendas disponibles. Puedes revisarlo aquí: ✨\n\n${cleanUrl}`;
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-      closeShareModal();
-    };
-
-    window.shareCatalogWhatsApp = function() {
-      openShareModal();
     };
 
     // MODO ADMINISTRADOR
@@ -818,19 +764,6 @@
 
     // INICIALIZACIÓN
     window.addEventListener('DOMContentLoaded', () => {
-      // Comprobar si vienen datos por la URL compartida
-      const hash = window.location.hash;
-      if (hash.includes('#data=')) {
-        try {
-          const jsonString = decodeURIComponent(hash.split('#data=')[1]);
-          const remoteProducts = JSON.parse(jsonString);
-          if (Array.isArray(remoteProducts) && remoteProducts.length > 0) {
-            products = remoteProducts;
-            localStorage.setItem('boutique_products_v7', JSON.stringify(products));
-          }
-        } catch(e) {}
-      }
-      
       initStorage();
       setMode('public');
     });
