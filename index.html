@@ -52,10 +52,10 @@
       </div>
       
       <div class="flex items-center space-x-2">
-        <!-- BOTÓN EXPORTAR REVISTA (IMAGEN) -->
-        <button onclick="exportCatalogAsImage()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white shadow-sm transition-all flex items-center space-x-1">
-          <i class="fa-solid fa-camera text-xs"></i>
-          <span>Exportar Revista</span>
+        <!-- BOTÓN EXPORTAR REVISTA (PÁGINAS MÚLTIPLES) -->
+        <button onclick="exportMultiPageMagazine()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white shadow-sm transition-all flex items-center space-x-1">
+          <i class="fa-solid fa-book-open text-xs"></i>
+          <span>Exportar Revista Multi-Página</span>
         </button>
 
         <!-- BOTÓN DE CAMBIO DE MODO -->
@@ -67,19 +67,13 @@
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL (ZONA CAPTURABLE PARA LA REVISTA) -->
-  <main id="magazine-container" class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
     
-    <!-- CABECERA ESTILO REVISTA -->
-    <div id="magazine-header-banner" class="hidden text-center py-6 mb-4 border-b border-gray-200 dark:border-gray-800">
-      <h2 class="text-2xl font-black uppercase tracking-widest text-brand-600 dark:text-brand-400">Catálogo Exclusivo - Mi Boutique</h2>
-      <p class="text-xs text-gray-500 mt-1">Novedades y prendas disponibles al instante</p>
-    </div>
-
-    <!-- VISTA 1: CATÁLOGO PÚBLICO -->
+    <!-- VISTA 1: CATÁLOGO PÚBLICO / REVISTA -->
     <div id="view-public" class="space-y-6">
       <!-- Buscador y Filtros -->
-      <div class="flex flex-col md:flex-row gap-3 items-center justify-between no-export">
+      <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
         <div class="relative w-full md:w-80">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-gray-400 text-xs"></i>
           <input type="text" id="public-search" oninput="renderPublicCatalog()" placeholder="Buscar prendas..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
@@ -91,15 +85,16 @@
         </div>
       </div>
 
-      <!-- Grilla de Productos -->
-      <div id="public-catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <!-- Productos generados por JavaScript -->
+      <!-- Contenedor general del catálogo -->
+      <div id="magazine-container" class="space-y-8">
+        <div id="public-catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <!-- Productos generados por JavaScript -->
+        </div>
       </div>
     </div>
 
     <!-- VISTA 2: PANEL ADMINISTRADOR -->
     <div id="view-admin" class="hidden space-y-4">
-      <!-- Pestañas internas de Admin -->
       <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-xl text-xs max-w-md mx-auto">
         <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="flex-1 py-1.5 rounded-lg text-center bg-white dark:bg-gray-700 font-semibold shadow-sm">
           <i class="fa-solid fa-boxes-stacked mr-1"></i> Stock / Ajuste
@@ -111,7 +106,6 @@
 
       <!-- Pestaña 1: Inventario -->
       <div id="admin-tab-stock" class="space-y-4 max-w-4xl mx-auto">
-        <!-- Métricas Rápidas -->
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 text-center">
             <span class="text-xs text-gray-400 font-medium block uppercase">Total Prendas</span>
@@ -123,7 +117,6 @@
           </div>
         </div>
 
-        <!-- Lista de Inventario -->
         <div id="admin-inventory-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <!-- Items generados por JS -->
         </div>
@@ -176,10 +169,10 @@
           </div>
 
           <div>
-            <label class="block text-[10px] font-semibold text-gray-500 mb-1">Foto del Producto</label>
-            <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
-            <div id="image-preview" class="mt-2 hidden">
-              <img id="preview-img-src" class="w-16 h-16 object-cover rounded-xl border border-gray-200">
+            <label class="block text-[10px] font-semibold text-gray-500 mb-1">Fotos del Producto (Puedes subir varias imágenes)</label>
+            <input type="file" id="form-images-input" accept="image/*" multiple onchange="handleMultipleImagesUpload(event)" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+            <div id="image-previews-container" class="mt-2 flex flex-wrap gap-2">
+              <!-- Vistas previas dinámicas -->
             </div>
           </div>
 
@@ -207,14 +200,22 @@
     </div>
   </nav>
 
-  <!-- MODAL: DETALLES DE PRODUCTO -->
+  <!-- MODAL: DETALLES DE PRODUCTO (CON CARRUSEL DE MÚLTIPLES FOTOS) -->
   <div id="product-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 hidden p-0 sm:p-4">
     <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
       <div class="relative h-64 bg-gray-100 dark:bg-gray-900">
         <img id="modal-img" src="" class="w-full h-full object-cover">
+        <!-- Botones de carrusel -->
+        <button onclick="prevModalImage()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+        <button onclick="nextModalImage()" class="absolute right-12 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
         <button onclick="closeModal()" class="absolute top-3 right-3 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
+        <div id="modal-image-counter" class="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] px-2 py-0.5 rounded-full font-semibold">1/1</div>
       </div>
       <div class="p-4 space-y-3 flex-1 overflow-y-auto">
         <div>
@@ -277,13 +278,17 @@
     <span id="toast-msg">Mensaje</span>
   </div>
 
-  <!-- LÓGICA DE DATOS Y EXPORTACIÓN DE REVISTA -->
+  <!-- LÓGICA Y EXPORTACIÓN DE REVISTA MULTI-PÁGINA -->
   <script>
     let products = [];
     let currentMode = 'public';
     let currentCategoryFilter = 'Todos';
-    let base64ImageTemp = '';
+    let currentUploadedImages = [];
     let isAdminAuthenticated = false;
+
+    // Estado del modal de detalle
+    let activeModalProduct = null;
+    let activeModalImageIndex = 0;
 
     const defaultProducts = [
       {
@@ -293,7 +298,7 @@
         price: 28.50,
         colors: ["Rosado", "Blanco"],
         sizes: { XS: 0, S: 3, M: 5, L: 2, XL: 0, Unique: 0 },
-        image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&auto=format&fit=crop&q=60"
+        images: ["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&auto=format&fit=crop&q=60"]
       },
       {
         id: "prod-2",
@@ -302,7 +307,7 @@
         price: 18.00,
         colors: ["Champagne", "Negro"],
         sizes: { XS: 1, S: 4, M: 2, L: 0, XL: 0, Unique: 0 },
-        image: "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&auto=format&fit=crop&q=60"
+        images: ["https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&auto=format&fit=crop&q=60"]
       },
       {
         id: "prod-3",
@@ -311,7 +316,7 @@
         price: 32.00,
         colors: ["Azul Claro", "Azul Oscuro"],
         sizes: { XS: 2, S: 6, M: 4, L: 3, XL: 1, Unique: 0 },
-        image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=60"
+        images: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=60"]
       }
     ];
 
@@ -319,7 +324,7 @@
       loadLocalData();
 
       setInterval(() => {
-        const saved = localStorage.getItem('boutique_products_v7');
+        const saved = localStorage.getItem('boutique_products_v8');
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
@@ -333,9 +338,16 @@
     }
 
     function loadLocalData() {
-      const saved = localStorage.getItem('boutique_products_v7');
+      const saved = localStorage.getItem('boutique_products_v8');
       if (saved) {
-        try { products = JSON.parse(saved); } catch(e) { products = [...defaultProducts]; }
+        try { 
+          products = JSON.parse(saved);
+          // Migración para asegurar compatibilidad con la propiedad 'images' array
+          products.forEach(p => {
+            if (!p.images && p.image) p.images = [p.image];
+            if (!p.images) p.images = [];
+          });
+        } catch(e) { products = [...defaultProducts]; }
       } else {
         products = [...defaultProducts];
       }
@@ -343,7 +355,7 @@
     }
 
     function saveAndSync() {
-      localStorage.setItem('boutique_products_v7', JSON.stringify(products));
+      localStorage.setItem('boutique_products_v8', JSON.stringify(products));
       refreshUI();
       showToast("¡Guardado correctamente!");
     }
@@ -354,37 +366,86 @@
       renderAdminInventory();
     }
 
-    // EXPORTAR COMO REVISTA (IMAGEN)
-    window.exportCatalogAsImage = function() {
-      showToast("Generando revista digital...");
-      const banner = document.getElementById('magazine-header-banner');
-      if (banner) banner.classList.remove('hidden');
+    // EXPORTAR REVISTA MULTI-PÁGINA (CREA VARIAS IMÁGENES SEGÚN LA CANTIDAD DE PRENDAS)
+    window.exportMultiPageMagazine = async function() {
+      const activeProducts = getFilteredProducts();
+      if (activeProducts.length === 0) {
+        showToast("No hay prendas para exportar");
+        return;
+      }
 
-      // Asegurarse de estar en modo público para la foto limpia
-      const oldMode = currentMode;
-      if (oldMode !== 'public') setMode('public');
+      showToast("Generando páginas de revista...");
+      if (currentMode !== 'public') setMode('public');
 
-      const container = document.getElementById('magazine-container');
-      
-      html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#f9fafb'
-      }).then(canvas => {
-        if (banner) banner.classList.add('hidden');
-        if (oldMode !== 'public') setMode(oldMode);
+      // Agrupar en páginas de máximo 6 productos por página de revista
+      const itemsPerPage = 6;
+      const totalPages = Math.ceil(activeProducts.length / itemsPerPage);
 
-        const link = document.createElement('a');
-        link.download = 'Catalogo-MiBoutique.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showToast("¡Revista exportada con éxito!");
-      }).catch(err => {
-        if (banner) banner.classList.add('hidden');
-        if (oldMode !== 'public') setMode(oldMode);
-        showToast("Error al exportar imagen");
-      });
+      for (let i = 0; i < totalPages; i++) {
+        const pageItems = activeProducts.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+        
+        // Crear un contenedor temporal oculto con la estructura de la página de revista
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '800px';
+        tempContainer.className = 'bg-white p-8 space-y-6 font-sans';
+
+        tempContainer.innerHTML = `
+          <div class="text-center border-b pb-4">
+            <h2 class="text-3xl font-black uppercase tracking-widest text-pink-600">Mi Boutique - Catálogo Oficial</h2>
+            <p class="text-sm text-gray-500 mt-1">Página ${i + 1} de ${totalPages} • Novedades y Prendas Disponibles</p>
+          </div>
+          <div class="grid grid-cols-3 gap-6">
+            ${pageItems.map(p => `
+              <div class="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 shadow-sm flex flex-col">
+                <div class="h-56 bg-gray-200 overflow-hidden relative">
+                  <img src="${p.images && p.images.length > 0 ? p.images[0] : ''}" class="w-full h-full object-cover">
+                </div>
+                <div class="p-4 space-y-1">
+                  <span class="text-[10px] font-bold text-pink-500 uppercase">${p.category}</span>
+                  <h3 class="font-bold text-sm text-gray-900">${p.name}</h3>
+                  <div class="flex justify-between items-center pt-2">
+                    <span class="font-extrabold text-base text-gray-900">$${(p.price || 0).toFixed(2)}</span>
+                    <span class="text-xs text-gray-500 font-medium">Colores: ${(p.colors || []).join(', ')}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="text-center pt-4 border-t text-xs text-gray-400">
+            ¡Realiza tu pedido o consulta disponibilidad al instante!
+          </div>
+        `;
+
+        document.body.appendChild(tempContainer);
+
+        try {
+          const canvas = await html2canvas(tempContainer, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+          const link = document.createElement('a');
+          link.download = `Catalogo-MiBoutique-Pagina-${i + 1}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        } catch(err) {
+          console.error(err);
+        }
+
+        document.body.removeChild(tempContainer);
+        // Pequeña pausa entre descargas para el navegador
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      showToast(`¡Se generaron ${totalPages} páginas de revista con éxito!`);
     };
+
+    function getFilteredProducts() {
+      const search = (document.getElementById('public-search')?.value || '').toLowerCase();
+      return products.filter(p => {
+        const matchCat = currentCategoryFilter === 'Todos' || p.category === currentCategoryFilter;
+        const matchSearch = p.name.toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      });
+    }
 
     // NAVEGACIÓN Y CONTRASEÑA ADMIN
     window.requestAdminAccess = function() {
@@ -490,13 +551,7 @@
     window.renderPublicCatalog = function() {
       const grid = document.getElementById('public-catalog-grid');
       if (!grid) return;
-      const search = (document.getElementById('public-search')?.value || '').toLowerCase();
-
-      const filtered = products.filter(p => {
-        const matchCat = currentCategoryFilter === 'Todos' || p.category === currentCategoryFilter;
-        const matchSearch = p.name.toLowerCase().includes(search);
-        return matchCat && matchSearch;
-      });
+      const filtered = getFilteredProducts();
 
       if (filtered.length === 0) {
         grid.innerHTML = `
@@ -511,11 +566,15 @@
       grid.innerHTML = filtered.map(p => {
         const totalStock = Object.values(p.sizes || {}).reduce((a, b) => a + b, 0);
         const inStock = totalStock > 0;
+        const coverImg = p.images && p.images.length > 0 ? p.images[0] : '';
+        const photosCount = p.images ? p.images.length : 0;
+
         return `
           <div onclick="openProductModal('${p.id}')" class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col cursor-pointer hover:shadow-md transition-all">
             <div class="relative h-40 bg-gray-100 dark:bg-gray-900 overflow-hidden">
-              <img src="${p.image}" class="w-full h-full object-cover">
+              <img src="${coverImg}" class="w-full h-full object-cover">
               ${!inStock ? '<span class="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Agotado</span>' : ''}
+              ${photosCount > 1 ? `<span class="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-images mr-1"></i>${photosCount}</span>` : ''}
             </div>
             <div class="p-3 flex-1 flex flex-col justify-between">
               <div>
@@ -532,13 +591,16 @@
       }).join('');
     };
 
-    // MODAL DETALLES
+    // MODAL DETALLES CON CARRUSEL MÚLTIPLE
     window.openProductModal = function(id) {
       if (currentMode === 'admin') return;
       const p = products.find(prod => prod.id === id);
       if (!p) return;
 
-      document.getElementById('modal-img').src = p.image;
+      activeModalProduct = p;
+      activeModalImageIndex = 0;
+      updateModalImageDisplay();
+
       document.getElementById('modal-category').textContent = p.category;
       document.getElementById('modal-title').textContent = p.name;
       document.getElementById('modal-price').textContent = `$${(p.price || 0).toFixed(2)}`;
@@ -557,6 +619,27 @@
       `).join('');
 
       document.getElementById('product-modal').classList.remove('hidden');
+    };
+
+    window.updateModalImageDisplay = function() {
+      if (!activeModalProduct || !activeModalProduct.images || activeModalProduct.images.length === 0) return;
+      const imgTag = document.getElementById('modal-img');
+      const counterTag = document.getElementById('modal-image-counter');
+      
+      imgTag.src = activeModalProduct.images[activeModalImageIndex];
+      counterTag.textContent = `${activeModalImageIndex + 1}/${activeModalProduct.images.length}`;
+    };
+
+    window.nextModalImage = function() {
+      if (!activeModalProduct || !activeModalProduct.images) return;
+      activeModalImageIndex = (activeModalImageIndex + 1) % activeModalProduct.images.length;
+      updateModalImageDisplay();
+    };
+
+    window.prevModalImage = function() {
+      if (!activeModalProduct || !activeModalProduct.images) return;
+      activeModalImageIndex = (activeModalImageIndex - 1 + activeModalProduct.images.length) % activeModalProduct.images.length;
+      updateModalImageDisplay();
     };
 
     window.closeModal = function() {
@@ -594,11 +677,16 @@
         const totalStock = Object.values(p.sizes || {}).reduce((a, b) => a + b, 0);
         totalItemsCount += totalStock;
         if (totalStock === 0) outOfStockCount++;
+        const coverImg = p.images && p.images.length > 0 ? p.images[0] : '';
+        const photosCount = p.images ? p.images.length : 0;
 
         return `
           <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-2">
             <div class="flex items-center space-x-3">
-              <img src="${p.image}" class="w-12 h-12 object-cover rounded-xl border border-gray-200">
+              <div class="relative w-12 h-12">
+                <img src="${coverImg}" class="w-12 h-12 object-cover rounded-xl border border-gray-200">
+                <span class="absolute -bottom-1 -right-1 bg-brand-500 text-white text-[8px] px-1 rounded-full font-bold">${photosCount}</span>
+              </div>
               <div class="flex-1">
                 <h4 class="font-bold text-xs text-gray-800 dark:text-gray-100">${p.name}</h4>
                 <div class="flex items-center space-x-2 text-[10px] text-gray-400">
@@ -645,17 +733,43 @@
       }
     };
 
-    window.handleImageUpload = function(e) {
-      const file = e.target.files[0];
-      if (file) {
+    // MANEJO DE MÚLTIPLES IMÁGENES
+    window.handleMultipleImagesUpload = function(e) {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         const reader = new FileReader();
         reader.onload = function(evt) {
-          base64ImageTemp = evt.target.result;
-          document.getElementById('preview-img-src').src = base64ImageTemp;
-          document.getElementById('image-preview').classList.remove('hidden');
+          currentUploadedImages.push(evt.target.result);
+          renderImagePreviews();
         };
         reader.readAsDataURL(file);
       }
+    };
+
+    function renderImagePreviews() {
+      const container = document.getElementById('image-previews-container');
+      if (!container) return;
+      if (currentUploadedImages.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = currentUploadedImages.map((imgSrc, index) => `
+        <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200">
+          <img src="${imgSrc}" class="w-full h-full object-cover">
+          <button type="button" onclick="removeUploadedImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px]">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.removeUploadedImage = function(index) {
+      currentUploadedImages.splice(index, 1);
+      renderImagePreviews();
     };
 
     window.handleProductSubmit = function(e) {
@@ -677,7 +791,13 @@
       };
 
       const existingProd = products.find(p => p.id === id);
-      const image = base64ImageTemp || (existingProd ? existingProd.image : "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&auto=format&fit=crop&q=60");
+      let images = [...currentUploadedImages];
+      if (images.length === 0 && existingProd && existingProd.images) {
+        images = [...existingProd.images];
+      }
+      if (images.length === 0) {
+        images = ["https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&auto=format&fit=crop&q=60"];
+      }
 
       const productPayload = {
         id: id || ('prod-' + Date.now()),
@@ -686,7 +806,7 @@
         price,
         colors,
         sizes,
-        image
+        images
       };
 
       if (id) {
@@ -718,9 +838,8 @@
       document.getElementById('size-xl').value = p.sizes.XL || 0;
       document.getElementById('size-unique').value = p.sizes.Unique || 0;
 
-      base64ImageTemp = p.image;
-      document.getElementById('preview-img-src').src = p.image;
-      document.getElementById('image-preview').classList.remove('hidden');
+      currentUploadedImages = p.images ? [...p.images] : (p.image ? [p.image] : []);
+      renderImagePreviews();
 
       document.getElementById('form-title').textContent = "Editar Prenda";
       switchAdminTab('add');
@@ -748,8 +867,8 @@
     window.resetForm = function() {
       document.getElementById('product-form').reset();
       document.getElementById('form-product-id').value = '';
-      document.getElementById('image-preview').classList.add('hidden');
-      base64ImageTemp = '';
+      currentUploadedImages = [];
+      renderImagePreviews();
       document.getElementById('form-title').textContent = "Agregar Nueva Prenda";
     };
 
