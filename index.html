@@ -325,7 +325,7 @@
     }
 
     function loadLocalData() {
-      const saved = localStorage.getItem('boutique_products_v11');
+      const saved = localStorage.getItem('boutique_products_v12');
       if (saved) {
         try { 
           products = JSON.parse(saved);
@@ -345,7 +345,7 @@
     }
 
     function saveAndSync() {
-      localStorage.setItem('boutique_products_v11', JSON.stringify(products));
+      localStorage.setItem('boutique_products_v12', JSON.stringify(products));
       refreshUI();
       showToast("¡Guardado correctamente!");
     }
@@ -778,7 +778,8 @@
 
     window.handleProductSubmit = function(e) {
       e.preventDefault();
-      const id = document.getElementById('form-product-id').value;
+      const idInput = document.getElementById('form-product-id');
+      const id = idInput ? idInput.value : '';
       const name = document.getElementById('form-name').value;
       const category = document.getElementById('form-category').value;
       const price = parseFloat(document.getElementById('form-price').value) || 0;
@@ -794,17 +795,19 @@
         Unique: parseInt(document.getElementById('size-unique').value) || 0
       };
 
-      const existingProd = products.find(function(p) { return p.id === id; });
       let images = [...currentUploadedImages];
-      if (images.length === 0 && existingProd && existingProd.images) {
-        images = [...existingProd.images];
+      if (images.length === 0 && id) {
+        const existingProd = products.find(function(p) { return p.id === id; });
+        if (existingProd && existingProd.images) {
+          images = [...existingProd.images];
+        }
       }
       if (images.length === 0) {
         images = ["https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&auto=format&fit=crop&q=60"];
       }
 
       const productPayload = {
-        id: id || ('prod-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)),
+        id: id ? id : ('prod-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)),
         name,
         category,
         price,
@@ -873,11 +876,14 @@
     };
 
     window.resetForm = function() {
-      document.getElementById('product-form').reset();
-      document.getElementById('form-product-id').value = '';
+      const form = document.getElementById('product-form');
+      if (form) form.reset();
+      const idField = document.getElementById('form-product-id');
+      if (idField) idField.value = '';
       currentUploadedImages = [];
       renderImagePreviews();
-      document.getElementById('form-title').textContent = "Agregar Nueva Prenda";
+      const formTitle = document.getElementById('form-title');
+      if (formTitle) formTitle.textContent = "Agregar Nueva Prenda";
     };
 
     window.showToast = function(msg) {
