@@ -98,7 +98,7 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm">Panel de Administración Activo</h3>
-                    <p class="text-xs text-slate-500">Crea nuevos cuadros, edita precios y arrastra fotos para publicar al instante.</p>
+                    <p class="text-xs text-slate-500">Crea nuevos cuadros de prendas, edita y guarda directamente en la tienda.</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -109,7 +109,7 @@
                 </div>
                 <button onclick="addNewProductCard()" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-700 transition-all">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>+ Nuevo Cuadro</span>
+                    <span>+ Nueva Publicación</span>
                 </button>
             </div>
         </div>
@@ -184,7 +184,7 @@
 
     <!-- Application Script -->
     <script>
-        const STORAGE_KEY = 'beach_shop_products_v12';
+        const STORAGE_KEY = 'beach_shop_products_v13';
         const WHATSAPP_KEY = 'beach_shop_whatsapp_v1';
         const ADMIN_SESSION_KEY = 'beach_shop_admin_session';
         const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -243,6 +243,7 @@
 
         function saveProducts() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+            showToast("Cambios guardados localmente");
         }
 
         function updateWhatsAppNumber(val) {
@@ -349,7 +350,6 @@
             products.unshift(newProd);
             saveProducts();
             renderProducts();
-            showToast("Cuadro creado correctamente");
         }
 
         function deleteProduct(id) {
@@ -357,7 +357,6 @@
                 products = products.filter(p => p.id !== id);
                 saveProducts();
                 renderProducts();
-                showToast("Publicación eliminada");
             }
         }
 
@@ -367,7 +366,6 @@
                 p.published = !p.published;
                 saveProducts();
                 renderProducts();
-                showToast(p.published ? "Publicación visible en tienda" : "Publicación ocultada");
             }
         }
 
@@ -435,10 +433,10 @@
                             </div>
 
                             <div class="flex flex-col gap-2.5">
-                                <input type="text" value="${p.title}" onchange="updateCardField('${p.id}', 'title', this.value)" placeholder="Nombre del producto" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <input type="text" id="title-${p.id}" value="${p.title}" placeholder="Nombre del producto" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
                                 
                                 <div class="grid grid-cols-2 gap-2">
-                                    <select onchange="updateCardField('${p.id}', 'category', this.value); renderProducts();" class="px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <select id="cat-${p.id}" onchange="renderProducts()" class="px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
                                         <option value="Camisas" ${p.category==='Camisas'?'selected':''}>Camisas</option>
                                         <option value="Pantalones" ${p.category==='Pantalones'?'selected':''}>Pantalones</option>
                                         <option value="Vestidos" ${p.category==='Vestidos'?'selected':''}>Vestidos</option>
@@ -447,11 +445,11 @@
                                     </select>
                                     <div class="relative">
                                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">$</span>
-                                        <input type="number" step="0.01" value="${p.price}" onchange="updateCardField('${p.id}', 'price', parseFloat(this.value))" class="w-full pl-6 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                        <input type="number" step="0.01" id="price-${p.id}" value="${p.price}" class="w-full pl-6 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
                                     </div>
                                 </div>
 
-                                <input type="text" value="${p.colors || ''}" onchange="updateCardField('${p.id}', 'colors', this.value)" placeholder="Colores (ej. Blanco, Azul)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <input type="text" id="colors-${p.id}" value="${p.colors || ''}" placeholder="Colores (ej. Blanco, Azul)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
 
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Inventario por Talla</span>
@@ -461,12 +459,17 @@
                                             return `
                                                 <div class="flex items-center bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px]">
                                                     <span class="font-bold text-slate-600 mr-1.5">${sz}:</span>
-                                                    <input type="number" min="0" value="${qty}" onchange="updateSizeStock('${p.id}', '${sz}', this.value)" class="w-9 text-center bg-slate-50 rounded font-semibold text-slate-800 focus:outline-none">
+                                                    <input type="number" min="0" id="size-${p.id}-${sz}" value="${qty}" class="w-9 text-center bg-slate-50 rounded font-semibold text-slate-800 focus:outline-none">
                                                 </div>
                                             `;
                                         }).join('')}
                                     </div>
                                 </div>
+
+                                <button onclick="saveSingleCard('${p.id}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all mt-1">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span>Guardar Prenda</span>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -498,22 +501,27 @@
             lucide.createIcons();
         }
 
-        function updateCardField(id, field, value) {
+        function saveSingleCard(id) {
             const p = products.find(item => item.id === id);
-            if (p) {
-                p[field] = value;
-                saveProducts();
-                showToast("Cambios guardados");
-            }
-        }
+            if (!p) return;
 
-        function updateSizeStock(id, size, val) {
-            const p = products.find(item => item.id === id);
-            if (p) {
-                if (!p.sizes) p.sizes = {};
-                p.sizes[size] = Math.max(0, parseInt(val) || 0);
-                saveProducts();
-            }
+            p.title = document.getElementById(`title-${id}`).value;
+            p.category = document.getElementById(`cat-${id}`).value;
+            p.price = parseFloat(document.getElementById(`price-${id}`).value) || 0;
+            p.colors = document.getElementById(`colors-${id}`).value;
+
+            const sizesList = getCategorySizesList(p.category);
+            p.sizes = {};
+            sizesList.forEach(sz => {
+                const input = document.getElementById(`size-${id}-${sz}`);
+                if (input) {
+                    p.sizes[sz] = Math.max(0, parseInt(input.value) || 0);
+                }
+            });
+
+            saveProducts();
+            showToast("¡Prenda guardada con éxito!");
+            renderProducts();
         }
 
         function handleCardDrop(e, id) {
@@ -559,7 +567,7 @@
                         if (processed === files.length) {
                             saveProducts();
                             renderProducts();
-                            showToast("Imágenes agregadas y guardadas");
+                            showToast("Imágenes cargadas correctamente");
                         }
                     };
                     img.src = event.target.result;
