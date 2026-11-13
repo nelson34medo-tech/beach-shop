@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beach Shop - Catálogo y Administrador</title>
+    <title>Beach Shop - Catálogo & Estilo Costero</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -14,11 +14,11 @@
                         beach: {
                             50: '#f0fdf4',
                             100: '#dcfce7',
-                            500: '#0ea5e9', // Azul océano
+                            500: '#0ea5e9',
                             600: '#0284c7',
                             700: '#0369a1',
-                            sand: '#fef3c7', // Arena cálida
-                            coral: '#fb7185', // Coral atardecer
+                            sand: '#fef3c7',
+                            coral: '#fb7185',
                         }
                     }
                 }
@@ -34,13 +34,13 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-cyan-50 via-amber-50/40 to-sky-100 min-h-screen text-slate-800 font-sans antialiased">
+<body class="bg-gradient-to-br from-cyan-50 via-amber-50/30 to-sky-100 min-h-screen text-slate-800 font-sans antialiased pb-20">
 
     <!-- Header / Navbar -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-sky-100 shadow-sm">
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-sky-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-tr from-sky-500 to-beach-500 p-2.5 rounded-2xl text-white shadow-md shadow-sky-500/20">
+                <div class="bg-gradient-to-tr from-sky-500 to-teal-500 p-2.5 rounded-2xl text-white shadow-md shadow-sky-500/20">
                     <i data-lucide="waves" class="w-6 h-6"></i>
                 </div>
                 <div>
@@ -90,7 +90,7 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 py-6">
         
-        {/* Admin Bar Config */}
+        <!-- Admin Bar Config -->
         <div id="admin-config-bar" class="hidden mb-6 bg-white border border-sky-200 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-amber-100 p-2.5 rounded-xl text-amber-700">
@@ -98,23 +98,23 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm">Panel de Administración Activo</h3>
-                    <p class="text-xs text-slate-500">Crea, edita o arrastra fotos a los cuadros de tus publicaciones.</p>
+                    <p class="text-xs text-slate-500">Crea nuevos cuadros, edita precios y arrastra fotos para publicar al instante.</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto">
-                <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex-1 sm:flex-initial">
+                <div class="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex-1 sm:flex-initial">
                     <i data-lucide="phone" class="w-4 h-4 text-emerald-600"></i>
-                    <span class="text-xs font-semibold text-slate-600">WhatsApp Ventas:</span>
+                    <span class="text-xs font-semibold text-slate-600">WhatsApp:</span>
                     <input type="text" id="whatsapp-number-input" onchange="updateWhatsAppNumber(this.value)" placeholder="584121234567" class="bg-transparent text-xs font-bold text-slate-800 focus:outline-none w-28">
                 </div>
-                <button onclick="addNewProductCard()" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-700 transition-all">
+                <button onclick="addNewProductCard()" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-bold shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-teal-700 transition-all">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     <span>+ Nuevo Cuadro</span>
                 </button>
             </div>
         </div>
 
-        {/* Dynamic Grid */}
+        <!-- Dynamic Grid -->
         <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <!-- Rendered dynamically by JS -->
         </div>
@@ -129,7 +129,7 @@
                     <i data-lucide="lock" class="w-6 h-6"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-800">Acceso Administrador</h3>
-                <p class="text-xs text-slate-500 mt-1">Ingresa la clave para gestionar el inventario y las publicaciones.</p>
+                <p class="text-xs text-slate-500 mt-1">Ingresa la contraseña para gestionar las publicaciones.</p>
             </div>
             <form onsubmit="verifyAdminPassword(event)">
                 <input type="password" id="admin-password-input" placeholder="Contraseña..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center font-bold tracking-widest" required autofocus>
@@ -159,13 +159,13 @@
             <div class="bg-emerald-100 w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-600 mx-auto mb-3">
                 <i data-lucide="message-circle" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">Enviar Consulta por WhatsApp</h3>
-            <p class="text-xs text-slate-500 mb-4">El mensaje con el detalle de la prenda está listo para enviarse al vendedor.</p>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">Consultar con el Vendedor</h3>
+            <p class="text-xs text-slate-500 mb-4">El mensaje con el detalle de la prenda está listo para enviarse.</p>
             <div id="whatsapp-preview-box" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-left text-xs text-slate-700 mb-4 max-h-36 overflow-y-auto font-mono"></div>
             <div class="flex flex-col gap-2">
                 <a id="whatsapp-direct-link" href="#" target="_blank" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all">
                     <i data-lucide="send" class="w-4 h-4"></i>
-                    <span>Abrir WhatsApp</span>
+                    <span>Abrir en WhatsApp</span>
                 </a>
                 <button onclick="copyWhatsAppMessage()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
                     <i data-lucide="copy" class="w-4 h-4"></i>
@@ -196,7 +196,6 @@
         let whatsappNumber = '584121234567';
         let activeWhatsAppText = '';
 
-        // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
             loadData();
             checkExistingSession();
@@ -211,7 +210,6 @@
                     products = JSON.parse(savedProducts);
                 } catch(e) { products = []; }
             } else {
-                // Default initial sample for Beach Shop
                 products = [
                     {
                         id: 'item_1',
@@ -238,9 +236,7 @@
             }
 
             const savedWa = localStorage.getItem(WHATSAPP_KEY);
-            if (savedWa) {
-                whatsappNumber = savedWa;
-            }
+            if (savedWa) whatsappNumber = savedWa;
             const waInput = document.getElementById('whatsapp-number-input');
             if (waInput) waInput.value = whatsappNumber;
         }
@@ -357,7 +353,7 @@
         }
 
         function deleteProduct(id) {
-            if (confirm("¿Estás seguro de eliminar este cuadro y su publicación?")) {
+            if (confirm("¿Estás seguro de eliminar este cuadro?")) {
                 products = products.filter(p => p.id !== id);
                 saveProducts();
                 renderProducts();
@@ -400,7 +396,7 @@
                             <i data-lucide="package-open" class="w-8 h-8"></i>
                         </div>
                         <h3 class="text-base font-bold text-slate-700">No hay publicaciones disponibles</h3>
-                        <p class="text-xs text-slate-500 mt-1">Cambia de categoría o crea un nuevo cuadro desde el panel de administrador.</p>
+                        <p class="text-xs text-slate-500 mt-1">Crea un nuevo cuadro desde el botón superior de Administrador.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -412,11 +408,9 @@
                 const totalStock = Object.values(p.sizes || {}).reduce((a, b) => a + Number(b), 0);
 
                 if (currentMode === 'admin') {
-                    // Admin Editable Card
                     const sizesList = getCategorySizesList(p.category);
                     return `
                         <div class="bg-white rounded-2xl border border-sky-100 shadow-sm p-4 flex flex-col gap-3 relative transition-all hover:shadow-md" data-id="${p.id}">
-                            <!-- Admin Top Status Bar -->
                             <div class="flex items-center justify-between">
                                 <button onclick="togglePublish('${p.id}')" class="px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${p.published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
                                     <span class="w-2 h-2 rounded-full ${p.published ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
@@ -427,7 +421,6 @@
                                 </button>
                             </div>
 
-                            <!-- Drag & Drop Image Area -->
                             <div class="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100 border-2 border-dashed border-slate-200 hover:border-sky-500 transition-all cursor-pointer flex flex-col items-center justify-center"
                                  ondragover="event.preventDefault()" 
                                  ondrop="handleCardDrop(event, '${p.id}')"
@@ -435,18 +428,17 @@
                                 <img src="${coverImg}" class="w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white p-2 text-center">
                                     <i data-lucide="image-plus" class="w-8 h-8 mb-1"></i>
-                                    <span class="text-xs font-bold">Arrastra o haz clic para subir fotos</span>
+                                    <span class="text-xs font-bold">Toca o arrastra fotos aquí</span>
                                 </div>
                                 <input type="file" id="file-${p.id}" multiple accept="image/*" class="hidden" onchange="handleCardFiles(event, '${p.id}')">
                                 <span class="absolute bottom-2 right-2 bg-slate-900/70 text-white text-[10px] px-2 py-0.5 rounded-md font-bold">${p.images ? p.images.length : 0} fotos</span>
                             </div>
 
-                            <!-- Inputs Editing -->
                             <div class="flex flex-col gap-2.5">
-                                <input type="text" value="${p.title}" onchange="updateCardField('${p.id}', 'title', this.value)" placeholder="Nombre del producto" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <input type="text" value="${p.title}" onchange="updateCardField('${p.id}', 'title', this.value)" placeholder="Nombre del producto" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
                                 
                                 <div class="grid grid-cols-2 gap-2">
-                                    <select onchange="updateCardField('${p.id}', 'category', this.value)" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <select onchange="updateCardField('${p.id}', 'category', this.value); renderProducts();" class="px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
                                         <option value="Camisas" ${p.category==='Camisas'?'selected':''}>Camisas</option>
                                         <option value="Pantalones" ${p.category==='Pantalones'?'selected':''}>Pantalones</option>
                                         <option value="Vestidos" ${p.category==='Vestidos'?'selected':''}>Vestidos</option>
@@ -455,22 +447,21 @@
                                     </select>
                                     <div class="relative">
                                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">$</span>
-                                        <input type="number" step="0.01" value="${p.price}" onchange="updateCardField('${p.id}', 'price', parseFloat(this.value))" class="w-full pl-6 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                        <input type="number" step="0.01" value="${p.price}" onchange="updateCardField('${p.id}', 'price', parseFloat(this.value))" class="w-full pl-6 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
                                     </div>
                                 </div>
 
-                                <input type="text" value="${p.colors || ''}" onchange="updateCardField('${p.id}', 'colors', this.value)" placeholder="Colores (ej. Blanco, Azul)" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <input type="text" value="${p.colors || ''}" onchange="updateCardField('${p.id}', 'colors', this.value)" placeholder="Colores (ej. Blanco, Azul)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
 
-                                <!-- Sizes Stock Inputs -->
-                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
-                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Inventario por Talla</span>
-                                    <div class="flex flex-wrap gap-1 max-h-28 overflow-y-auto p-1">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Inventario por Talla</span>
+                                    <div class="flex flex-wrap gap-1 max-h-32 overflow-y-auto p-1">
                                         ${sizesList.map(sz => {
                                             const qty = p.sizes && p.sizes[sz] !== undefined ? p.sizes[sz] : 0;
                                             return `
-                                                <div class="flex items-center bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 text-[10px]">
-                                                    <span class="font-bold text-slate-600 mr-1">${sz}:</span>
-                                                    <input type="number" min="0" value="${qty}" onchange="updateSizeStock('${p.id}', '${sz}', this.value)" class="w-8 text-center bg-slate-50 rounded font-semibold text-slate-800 focus:outline-none">
+                                                <div class="flex items-center bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px]">
+                                                    <span class="font-bold text-slate-600 mr-1.5">${sz}:</span>
+                                                    <input type="number" min="0" value="${qty}" onchange="updateSizeStock('${p.id}', '${sz}', this.value)" class="w-9 text-center bg-slate-50 rounded font-semibold text-slate-800 focus:outline-none">
                                                 </div>
                                             `;
                                         }).join('')}
@@ -480,7 +471,6 @@
                         </div>
                     `;
                 } else {
-                    // Catalog Public Card View
                     return `
                         <div onclick="openProductModal('${p.id}')" class="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden group cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col">
                             <div class="aspect-[4/5] bg-slate-100 relative overflow-hidden">
@@ -508,7 +498,6 @@
             lucide.createIcons();
         }
 
-        // Admin field update functions
         function updateCardField(id, field, value) {
             const p = products.find(item => item.id === id);
             if (p) {
@@ -527,7 +516,6 @@
             }
         }
 
-        // Image compression and upload handling
         function handleCardDrop(e, id) {
             e.preventDefault();
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -571,7 +559,7 @@
                         if (processed === files.length) {
                             saveProducts();
                             renderProducts();
-                            showToast("Imágenes agregadas y comprimidas con éxito");
+                            showToast("Imágenes agregadas y guardadas");
                         }
                     };
                     img.src = event.target.result;
@@ -580,7 +568,6 @@
             });
         }
 
-        // Product Detail Modal & WhatsApp
         let activeProductForModal = null;
 
         function openProductModal(id) {
@@ -594,13 +581,11 @@
 
             const content = document.getElementById('modal-content');
             content.innerHTML = `
-                <!-- Main Image Preview -->
                 <div class="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100 mb-4 relative shadow-inner">
                     <img id="modal-main-img" src="${images[0]}" class="w-full h-full object-cover">
                     <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-sky-700 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm">${p.category}</span>
                 </div>
                 
-                <!-- Thumbnails if multiple -->
                 ${images.length > 1 ? `
                     <div class="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
                         ${images.map((img, idx) => `
@@ -609,7 +594,6 @@
                     </div>
                 ` : ''}
 
-                <!-- Info -->
                 <div class="mb-4">
                     <div class="flex items-start justify-between gap-2">
                         <h2 class="text-xl font-black text-slate-800">${p.title}</h2>
@@ -618,7 +602,6 @@
                     ${p.colors ? `<p class="text-xs text-slate-500 mt-1">🎨 <strong>Colores:</strong> ${p.colors}</p>` : ''}
                 </div>
 
-                <!-- Sizes & Availability -->
                 <div class="mb-6 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                     <span class="text-xs font-bold text-slate-700 block mb-2">Tallas y Stock Disponible:</span>
                     <div class="flex flex-wrap gap-1.5">
@@ -630,10 +613,9 @@
                     </div>
                 </div>
 
-                <!-- WhatsApp Inquire Button -->
                 <button onclick="prepareWhatsAppInquiry()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all">
                     <i data-lucide="message-circle" class="w-5 h-5"></i>
-                    <span>Compartir / Consultar con el Vendedor por WhatsApp</span>
+                    <span>Consultar con el Vendedor por WhatsApp</span>
                 </button>
             `;
 
@@ -662,7 +644,6 @@
 
             document.getElementById('whatsapp-preview-box').innerText = activeWhatsAppText;
             
-            // Format phone number
             let phone = whatsappNumber.replace(/[^0-9]/g, '');
             if (!phone) phone = '584121234567';
 
@@ -685,7 +666,6 @@
             });
         }
 
-        // Magazine Export
         function exportMagazine() {
             showToast("Generando revista multi-página...");
             html2canvas(document.body, { scale: 1, useCORS: true }).then(canvas => {
@@ -699,7 +679,6 @@
             });
         }
 
-        // Toast Helper
         function showToast(msg, isError = false) {
             const toast = document.getElementById('toast');
             const msgSpan = document.getElementById('toast-message');
