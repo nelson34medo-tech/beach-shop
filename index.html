@@ -1,453 +1,491 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Boutique - Catálogo e Inventario</title>
-  <!-- Tailwind CSS -->
+  <title>Mi Boutique - Catálogo Digital e Inventario</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- html2canvas para exportar como imagen -->
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2canvas CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+  <!-- Google Fonts: Inter & Playfair Display -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
-      darkMode: 'class',
+      darkMode: 'media',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
           colors: {
             brand: {
               50: '#fdf2f8',
               100: '#fce7f3',
               200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
               500: '#ec4899',
               600: '#db2777',
               700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
             }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    .drag-over {
+      border-color: #db2777 !important;
+      background-color: #fdf2f8 !important;
+      transform: scale(1.01);
+    }
+  </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-full flex flex-col font-sans pb-16">
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 font-sans antialiased min-h-screen flex flex-col">
 
-  <!-- HEADER DE NAVEGACIÓN -->
-  <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white shadow-md">
-          <i class="fa-solid fa-shirt text-sm"></i>
+  <!-- BARRA SUPERIOR FIJA -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+      <!-- Logo y Título -->
+      <div class="flex items-center gap-2.5 cursor-pointer" onclick="setMode('public')">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
         </div>
         <div>
-          <h1 class="font-extrabold text-sm text-gray-900 dark:text-white leading-none">Mi Boutique</h1>
-          <span id="header-mode-badge" class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-600 font-semibold">Catálogo Revista</span>
+          <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight text-gray-900 dark:text-white">Mi Boutique</h1>
+          <span class="inline-block text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">CATÁLOGO REVISTA</span>
         </div>
       </div>
-      
-      <div class="flex items-center space-x-2">
-        <!-- BOTÓN EXPORTAR REVISTA (PÁGINAS MÚLTIPLES) -->
-        <button onclick="exportMultiPageMagazine()" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-500 hover:bg-brand-600 text-white shadow-sm transition-all flex items-center space-x-1">
-          <i class="fa-solid fa-book-open text-xs"></i>
-          <span>Exportar Revista Multi-Página</span>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-center gap-2">
+        <button id="btn-export-magazine" onclick="openMagazineExporter()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Exportar Revista Multi-Página</span>
+          <span class="sm:hidden">Revista</span>
         </button>
 
-        <!-- BOTÓN DE CAMBIO DE MODO -->
-        <button onclick="requestAdminAccess()" class="text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 transition-colors flex items-center space-x-1">
-          <i class="fa-solid fa-user-lock text-brand-500"></i>
-          <span id="mode-btn-text">Admin</span>
+        <button id="btn-toggle-mode" onclick="requestAdminAccess()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs sm:text-sm font-semibold border border-gray-200 dark:border-gray-700 transition-all active:scale-95">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-brand-600"></i>
+          <span id="btn-toggle-text">Admin</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <main class="flex-1 max-w-6xl mx-auto w-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900">
-    
-    <!-- VISTA 1: CATÁLOGO PÚBLICO / REVISTA -->
-    <div id="view-public" class="space-y-6">
-      <!-- Buscador y Filtros -->
-      <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div class="relative w-full md:w-80">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-gray-400 text-xs"></i>
-          <input type="text" id="public-search" oninput="renderPublicCatalog()" placeholder="Buscar prendas..." class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
-        </div>
-
-        <!-- Filtros de Categorías -->
-        <div id="category-pills" class="flex space-x-2 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
-          <!-- Generado dinámicamente -->
-        </div>
+  <!-- VISTA 1: CATÁLOGO PÚBLICO -->
+  <main id="public-view" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Buscador y Filtros -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div class="relative flex-1 max-w-md">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+          <i data-lucide="search" class="w-4 h-4"></i>
+        </span>
+        <input type="text" id="search-input" oninput="renderPublicCatalog()" placeholder="Buscar por nombre o color..." class="w-full pl-10 pr-4 py-2.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
       </div>
 
-      <!-- Contenedor general del catálogo -->
-      <div id="magazine-container" class="space-y-8">
-        <div id="public-catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <!-- Productos generados por JavaScript -->
-        </div>
+      <!-- Categorías -->
+      <div id="category-filters" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <button onclick="setCategoryFilter('Todos')" data-cat="Todos" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-600 text-white shadow-sm whitespace-nowrap transition-all">Todos</button>
+        <button onclick="setCategoryFilter('Camisas')" data-cat="Camisas" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-brand-400 whitespace-nowrap transition-all">Camisas</button>
+        <button onclick="setCategoryFilter('Pantalones')" data-cat="Pantalones" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-brand-400 whitespace-nowrap transition-all">Pantalones</button>
+        <button onclick="setCategoryFilter('Vestidos')" data-cat="Vestidos" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-brand-400 whitespace-nowrap transition-all">Vestidos</button>
+        <button onclick="setCategoryFilter('Calzado')" data-cat="Calzado" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-brand-400 whitespace-nowrap transition-all">Calzado</button>
+        <button onclick="setCategoryFilter('Accesorios')" data-cat="Accesorios" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-brand-400 whitespace-nowrap transition-all">Accesorios</button>
       </div>
     </div>
 
-    <!-- VISTA 2: PANEL ADMINISTRADOR -->
-    <div id="view-admin" class="hidden space-y-4">
-      <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-xl text-xs max-w-md mx-auto">
-        <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="flex-1 py-1.5 rounded-lg text-center bg-white dark:bg-gray-700 font-semibold shadow-sm">
-          <i class="fa-solid fa-boxes-stacked mr-1"></i> Stock / Ajuste
-        </button>
-        <button id="tab-btn-add" onclick="switchAdminTab('add')" class="flex-1 py-1.5 rounded-lg text-center text-gray-500 dark:text-gray-400">
-          <i class="fa-solid fa-plus-circle mr-1"></i> Nuevo Producto
-        </button>
+    <!-- Cuadrícula de Productos Activos -->
+    <div id="public-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+    <!-- Estado Vacío -->
+    <div id="public-empty-state" class="hidden text-center py-16 px-4">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500">
+        <i data-lucide="sparkles" class="w-8 h-8"></i>
       </div>
-
-      <!-- Pestaña 1: Inventario -->
-      <div id="admin-tab-stock" class="space-y-4 max-w-4xl mx-auto">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 text-center">
-            <span class="text-xs text-gray-400 font-medium block uppercase">Total Prendas</span>
-            <span id="stat-total-items" class="text-2xl font-extrabold text-brand-600 dark:text-brand-400">0</span>
-          </div>
-          <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 text-center">
-            <span class="text-xs text-gray-400 font-medium block uppercase">Sin Stock</span>
-            <span id="stat-out-stock" class="text-2xl font-extrabold text-red-500">0</span>
-          </div>
-        </div>
-
-        <div id="admin-inventory-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <!-- Items generados por JS -->
-        </div>
-      </div>
-
-      <!-- Pestaña 2: Agregar / Editar Producto -->
-      <div id="admin-tab-add" class="hidden max-w-lg mx-auto bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 space-y-4 shadow-sm">
-        <h3 id="form-title" class="font-bold text-xs uppercase tracking-wider text-gray-500">Agregar Nueva Prenda</h3>
-        
-        <form id="product-form" onsubmit="handleProductSubmit(event)" class="space-y-3">
-          <input type="hidden" id="form-product-id">
-
-          <div>
-            <label class="block text-[10px] font-semibold text-gray-500 mb-1">Nombre de la Prenda</label>
-            <input type="text" id="form-name" required class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-1">Categoría</label>
-              <select id="form-category" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
-                <option value="Vestidos">Vestidos</option>
-                <option value="Blusas/Tops">Blusas/Tops</option>
-                <option value="Pantalones">Pantalones</option>
-                <option value="Calzado">Calzado</option>
-                <option value="Accesorios">Accesorios</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-semibold text-gray-500 mb-1">Precio ($)</label>
-              <input type="number" step="0.01" id="form-price" required class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-semibold text-gray-500 mb-1">Colores (separados por coma)</label>
-            <input type="text" id="form-colors" placeholder="Ej: Rosado, Blanco, Negro" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-semibold text-gray-500 mb-1">Stock por Tallas</label>
-            <div class="grid grid-cols-3 gap-2">
-              <div><span class="text-[9px] text-gray-400 uppercase">XS:</span> <input type="number" id="size-xs" value="0" min="0" class="w-full bg-gray-50 dark:bg-gray-900 border rounded-lg p-1 text-xs text-center"></div>
-              <div><span class="text-[9px] text-gray-400 uppercase">S:</span> <input type="number" id="size-s" value="0" min="0" class="w-full bg-gray-50 dark:bg-gray-900 border rounded-lg p-1 text-xs text-center"></div>
-              <div><span class="text-[9px] text-gray-400 uppercase">M:</span> <input type="number" id="size-m" value="0" min="0" class="w-full bg-gray-50 dark:bg-gray-900 border rounded-lg p-1 text-xs text-center"></div>
-              <div><span class="text-[9px] text-gray-400 uppercase">L:</span> <input type="number" id="size-l" value="0" min="0" class="w-full bg-gray-50 dark:bg-gray-900 border rounded-lg p-1 text-xs text-center"></div>
-              <div><span class="text-[9px] text-gray-400 uppercase">XL:</span> <input type="number" id="size-xl" value="0" min="0" class="w-full bg-gray-50 dark:bg-gray-900 border rounded-lg p-1 text-xs text-center"></div>
-              <div><span class="text-[9px] text-gray-400 uppercase">Única:</span> <input type="number" id="size-unique" value="0" min="0" class="w-full bg-gray-50 dark:bg-gray-900 border rounded-lg p-1 text-xs text-center"></div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-semibold text-gray-500 mb-1">Fotos del Producto (Puedes subir varias imágenes)</label>
-            <input type="file" id="form-images-input" accept="image/*" multiple onchange="handleMultipleImagesUpload(event)" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
-            <div id="image-previews-container" class="mt-2 flex flex-wrap gap-2">
-              <!-- Vistas previas dinámicas -->
-            </div>
-          </div>
-
-          <div class="flex space-x-2 pt-2">
-            <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-600 text-white py-2 rounded-xl text-xs font-bold transition-all shadow-md">Guardar Prenda</button>
-            <button type="button" onclick="resetForm()" class="px-3 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl text-xs font-semibold">Limpiar</button>
-          </div>
-        </form>
-      </div>
+      <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-1">No hay prendas disponibles con ese filtro</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">Prueba con otra categoría o entra al panel <strong>Admin</strong> para publicar nuevas prendas.</p>
     </div>
-
   </main>
 
-  <!-- BARRA NAVEGACIÓN INFERIOR (MÓVIL) -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-t border-gray-100 dark:border-gray-700 z-30 md:hidden">
-    <div class="max-w-md mx-auto flex justify-around py-2">
-      <button id="nav-btn-public" onclick="setMode('public')" class="flex flex-col items-center space-y-0.5 text-brand-500">
-        <i class="fa-solid fa-store text-base"></i>
-        <span class="text-[9px] font-medium">Catálogo</span>
-      </button>
-      <button id="nav-btn-admin" onclick="requestAdminAccess()" class="flex flex-col items-center space-y-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-        <i class="fa-solid fa-layer-group text-base"></i>
-        <span class="text-[9px] font-medium">Inventario</span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- MODAL: DETALLES DE PRODUCTO (CON CARRUSEL DE MÚLTIPLES FOTOS) -->
-  <div id="product-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 hidden p-0 sm:p-4">
-    <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-      <div class="relative h-64 bg-gray-100 dark:bg-gray-900">
-        <img id="modal-img" src="" class="w-full h-full object-cover">
-        <!-- Botones de carrusel -->
-        <button onclick="prevModalImage()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
-          <i class="fa-solid fa-chevron-left text-xs"></i>
-        </button>
-        <button onclick="nextModalImage()" class="absolute right-12 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
-          <i class="fa-solid fa-chevron-right text-xs"></i>
-        </button>
-        <button onclick="closeModal()" class="absolute top-3 right-3 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-md">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-        <div id="modal-image-counter" class="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] px-2 py-0.5 rounded-full font-semibold">1/1</div>
+  <!-- VISTA 2: PANEL ADMINISTRADOR INTERACTIVO -->
+  <section id="admin-view" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Barra Superior de Admin -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">Editor Visual de Publicaciones</h2>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">Sesión Activa (2h)</span>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Arrastra fotos a cada cuadro, edita precios y tallas, y activa el interruptor para mostrar en el catálogo.</p>
       </div>
-      <div class="p-4 space-y-3 flex-1 overflow-y-auto">
-        <div>
-          <span id="modal-category" class="text-[10px] font-bold uppercase tracking-wider text-brand-500">Categoría</span>
-          <h2 id="modal-title" class="text-base font-extrabold text-gray-800 dark:text-gray-100">Nombre del Producto</h2>
-          <span id="modal-price" class="text-lg font-black text-gray-900 dark:text-white">$0.00</span>
+
+      <!-- Configuración WhatsApp Ventas + Botones -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Campo WhatsApp Ventas -->
+        <div class="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
+          <i data-lucide="phone" class="w-4 h-4 text-green-600 ml-1.5 shrink-0"></i>
+          <input type="text" id="admin-whatsapp-input" placeholder="WhatsApp Ventas (ej: 584121234567)" class="bg-transparent text-xs font-medium px-2 py-1 w-44 sm:w-52 focus:outline-none text-gray-800 dark:text-gray-200">
+          <button type="button" onclick="saveWhatsappNumber()" class="px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition-colors">Guardar</button>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 text-xs">
+          <div>
+            <span class="text-gray-400 block text-[10px]">Publicados</span>
+            <span id="stat-active-count" class="font-bold text-sm text-green-600">0</span>
+          </div>
+          <div class="h-5 w-px bg-gray-200 dark:bg-gray-700"></div>
+          <div>
+            <span class="text-gray-400 block text-[10px]">Total</span>
+            <span id="stat-total-cards" class="font-bold text-sm text-gray-800 dark:text-gray-200">0</span>
+          </div>
+        </div>
+
+        <!-- Botón Nuevo Cuadro -->
+        <button type="button" onclick="addNewBlankCard()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Nuevo Cuadro
+        </button>
+
+        <!-- Botón Ver Catálogo -->
+        <button type="button" onclick="setMode('public')" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95">
+          <i data-lucide="eye" class="w-4 h-4"></i>
+          Ver Catálogo
+        </button>
+      </div>
+    </div>
+
+    <!-- Cuadrícula de Cuadros Editables -->
+    <div id="admin-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- MODAL DE DETALLE DE PRENDA (Vista Pública) -->
+  <div id="product-modal" class="hidden fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800 animate-fade-in max-h-[92vh] flex flex-col">
+      <!-- Galería de Imágenes -->
+      <div class="relative bg-gray-100 dark:bg-gray-800 h-72 sm:h-96 flex items-center justify-center overflow-hidden shrink-0">
+        <img id="modal-img" src="" alt="Prenda" class="w-full h-full object-contain">
+        <button type="button" onclick="closeProductModal()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Flechas Navegación -->
+        <button type="button" id="modal-prev-img" onclick="changeModalImage(-1)" class="hidden absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/85 hover:bg-white text-gray-800 shadow flex items-center justify-center">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <button type="button" id="modal-next-img" onclick="changeModalImage(1)" class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/85 hover:bg-white text-gray-800 shadow flex items-center justify-center">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Miniaturas -->
+        <div id="modal-thumbs" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/45 px-2.5 py-1.5 rounded-full backdrop-blur-sm"></div>
+      </div>
+
+      <!-- Información y Botón WhatsApp -->
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <span id="modal-cat" class="text-[11px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 dark:bg-brand-900/30 px-2.5 py-0.5 rounded-full">Categoría</span>
+            <h3 id="modal-title" class="text-xl font-bold text-gray-900 dark:text-white mt-1.5">Nombre de la prenda</h3>
+          </div>
+          <span id="modal-price" class="text-2xl font-extrabold text-brand-600">$0.00</span>
         </div>
 
         <div>
-          <span class="text-[10px] font-semibold text-gray-400 block mb-1">Colores disponibles:</span>
-          <div id="modal-colors" class="flex flex-wrap gap-1"></div>
+          <span class="block text-xs font-bold uppercase text-gray-400 mb-1.5">Colores disponibles</span>
+          <div id="modal-colors" class="flex flex-wrap gap-1.5"></div>
         </div>
 
         <div>
-          <span class="text-[10px] font-semibold text-gray-400 block mb-1">Stock disponible por Talla:</span>
-          <div id="modal-sizes" class="grid grid-cols-3 gap-2"></div>
+          <span class="block text-xs font-bold uppercase text-gray-400 mb-1.5">Tallas y Disponibilidad</span>
+          <div id="modal-sizes" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+        </div>
+
+        <!-- Botón Preguntar / Compartir por WhatsApp -->
+        <div class="pt-3 border-t border-gray-100 dark:border-gray-800">
+          <button type="button" onclick="openWhatsappShareModal()" class="w-full py-3.5 px-5 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2.5 transition-all active:scale-95">
+            <i data-lucide="message-circle" class="w-5 h-5 shrink-0"></i>
+            <span>Preguntar / Compartir por WhatsApp</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: CONTRASEÑA ADMIN -->
-  <div id="password-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white dark:bg-gray-800 w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-center">
-      <div class="w-10 h-10 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mx-auto">
-        <i class="fa-solid fa-lock text-sm"></i>
+  <!-- SUB-MODAL DE COMPARTIR POR WHATSAPP (Sin bloqueos wa.me) -->
+  <div id="whatsapp-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 animate-fade-in space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-green-100 dark:bg-green-900/40 text-green-600 flex items-center justify-center">
+            <i data-lucide="message-circle" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">Enviar consulta por WhatsApp</h3>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400">Mensaje listo con los detalles de la prenda</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeWhatsappModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
       </div>
-      <h3 class="font-bold text-sm text-gray-800 dark:text-gray-100">Acceso Administrador</h3>
-      <p class="text-[10px] text-gray-400">Ingresa la clave para gestionar inventario</p>
 
-      <form onsubmit="verifyAdminPassword(event)" class="space-y-2">
-        <input type="password" id="admin-password-input" placeholder="Contraseña..." class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500">
-        <div class="flex space-x-2">
-          <button type="submit" class="flex-1 bg-brand-500 text-white py-1.5 rounded-xl text-xs font-bold">Acceder</button>
-          <button type="button" onclick="closePasswordModal()" class="px-3 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl text-xs font-semibold">Cancelar</button>
+      <!-- Vista previa del mensaje -->
+      <div>
+        <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Mensaje prearmado:</label>
+        <textarea id="whatsapp-message-preview" rows="5" readonly class="w-full p-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-800 dark:text-gray-200 focus:outline-none resize-none"></textarea>
+      </div>
+
+      <!-- Botones de Acción Directa -->
+      <div class="flex flex-col sm:flex-row gap-2.5">
+        <a id="whatsapp-direct-link" href="#" class="flex-1 py-3 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow transition-all">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Abrir App WhatsApp</span>
+        </a>
+        <button type="button" onclick="copyWhatsappMessage()" class="py-3 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+          <span>Copiar mensaje</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONTRASEÑA DE ADMINISTRADOR -->
+  <div id="password-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 animate-fade-in">
+      <div class="w-12 h-12 rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 flex items-center justify-center mb-4">
+        <i data-lucide="lock" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white">Acceso Administrador</h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">Ingresa tu clave para editar prendas. Tu sesión permanecerá activa durante 2 horas en este dispositivo.</p>
+      <form onsubmit="verifyAdminPassword(event)" class="space-y-4">
+        <input type="password" id="admin-password-input" placeholder="Contraseña..." class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" onclick="closePasswordModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow">Entrar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: CONFIRMAR ELIMINACIÓN -->
-  <div id="delete-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-    <div class="bg-white dark:bg-gray-800 w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-center">
-      <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-        <i class="fa-solid fa-trash-can text-sm"></i>
+  <!-- MODAL EXPORTADOR DE REVISTA DIGITAL MULTI-PÁGINA -->
+  <div id="magazine-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800 animate-fade-in">
+      <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Exportar Revista Digital Multi-Página</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Descarga páginas de revista en PNG de alta calidad con todas tus prendas publicadas.</p>
+        </div>
+        <button type="button" onclick="closeMagazineExporter()" class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 flex items-center justify-center text-gray-600 dark:text-gray-300">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
-      <h3 class="font-bold text-sm text-gray-800 dark:text-gray-100">¿Eliminar prenda?</h3>
-      <p class="text-[10px] text-gray-400">Esta acción no se puede deshacer.</p>
-      <input type="hidden" id="delete-target-id">
 
-      <div class="flex space-x-2 pt-1">
-        <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-500 text-white py-1.5 rounded-xl text-xs font-bold">Eliminar</button>
-        <button onclick="closeDeleteModal()" class="px-3 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl text-xs font-semibold">Cancelar</button>
+      <div class="p-5 overflow-y-auto flex-1 bg-gray-100 dark:bg-gray-950 flex flex-col items-center gap-6" id="magazine-preview-container"></div>
+
+      <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-wrap items-center justify-between gap-3">
+        <span id="magazine-page-info" class="text-xs font-semibold text-gray-500">0 páginas generadas</span>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeMagazineExporter()" class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cerrar</button>
+          <button type="button" id="btn-download-all-pages" onclick="downloadAllMagazinePages()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-bold shadow">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Descargar Todas las Páginas (PNG)
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICACIONES -->
-  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg backdrop-blur-md opacity-0 transition-opacity duration-300 pointer-events-none z-50">
-    <span id="toast-msg">Mensaje</span>
-  </div>
+  <!-- NOTIFICACIÓN TOAST -->
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-semibold shadow-xl transition-all"></div>
 
-  <!-- LÓGICA Y EXPORTACIÓN DE REVISTA MULTI-PÁGINA -->
+  <!-- LÓGICA DE LA APLICACIÓN -->
   <script>
+    const STORAGE_KEY = 'boutique_products_v12';
+    const WHATSAPP_KEY = 'boutique_whatsapp_v1';
+    const ADMIN_SESSION_KEY = 'boutique_admin_session_exp';
+    const TWO_HOURS_MS = 7200000;
+
     let products = [];
+    let sellerWhatsapp = '';
     let currentMode = 'public';
     let currentCategoryFilter = 'Todos';
-    let currentUploadedImages = [];
     let isAdminAuthenticated = false;
 
-    // Estado del modal de detalle
     let activeModalProduct = null;
-    let activeModalImageIndex = 0;
+    let activeModalImgIndex = 0;
 
-    const defaultProducts = [
-      {
-        id: "prod-1",
-        name: "Vestido Midi Floreado",
-        category: "Vestidos",
-        price: 28.50,
-        colors: ["Rosado", "Blanco"],
-        sizes: { XS: 0, S: 3, M: 5, L: 2, XL: 0, Unique: 0 },
-        images: ["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&auto=format&fit=crop&q=60"]
-      },
-      {
-        id: "prod-2",
-        name: "Blusa Satinada Elegante",
-        category: "Blusas/Tops",
-        price: 18.00,
-        colors: ["Champagne", "Negro"],
-        sizes: { XS: 1, S: 4, M: 2, L: 0, XL: 0, Unique: 0 },
-        images: ["https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&auto=format&fit=crop&q=60"]
-      },
-      {
-        id: "prod-3",
-        name: "Jeans Mom Fit Tiro Alto",
-        category: "Pantalones",
-        price: 32.00,
-        colors: ["Azul Claro", "Azul Oscuro"],
-        sizes: { XS: 2, S: 6, M: 4, L: 3, XL: 1, Unique: 0 },
-        images: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=60"]
+    function refreshIcons() {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
       }
-    ];
-
-    async function initStorage() {
-      loadLocalData();
     }
 
-    function loadLocalData() {
-      const saved = localStorage.getItem('boutique_products_v12');
-      if (saved) {
-        try { 
-          products = JSON.parse(saved);
-          if (!Array.isArray(products) || products.length === 0) {
-            products = [...defaultProducts];
-          } else {
-            products.forEach(function(p) {
-              if (!p.images && p.image) p.images = [p.image];
-              if (!p.images) p.images = [];
-            });
-          }
-        } catch(e) { products = [...defaultProducts]; }
-      } else {
-        products = [...defaultProducts];
-      }
-      refreshUI();
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(function() {
+        toast.classList.add('hidden');
+      }, 2800);
     }
 
-    function saveAndSync() {
-      localStorage.setItem('boutique_products_v12', JSON.stringify(products));
-      refreshUI();
-      showToast("¡Guardado correctamente!");
-    }
-
-    function refreshUI() {
-      renderCategoryPills();
-      renderPublicCatalog();
-      renderAdminInventory();
-    }
-
-    // EXPORTAR REVISTA MULTI-PÁGINA
-    window.exportMultiPageMagazine = async function() {
-      const activeProducts = getFilteredProducts();
-      if (activeProducts.length === 0) {
-        showToast("No hay prendas para exportar");
-        return;
-      }
-
-      showToast("Generando páginas de revista...");
-      if (currentMode !== 'public') setMode('public');
-
-      const itemsPerPage = 6;
-      const totalPages = Math.ceil(activeProducts.length / itemsPerPage);
-
-      for (let i = 0; i < totalPages; i++) {
-        const pageItems = activeProducts.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
-        
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '800px';
-        tempContainer.className = 'bg-white p-8 space-y-6 font-sans';
-
-        tempContainer.innerHTML = `
-          <div class="text-center border-b pb-4">
-            <h2 class="text-3xl font-black uppercase tracking-widest text-pink-600">Mi Boutique - Catálogo Oficial</h2>
-            <p class="text-sm text-gray-500 mt-1">Página ${i + 1} de ${totalPages} • Novedades y Prendas Disponibles</p>
-          </div>
-          <div class="grid grid-cols-3 gap-6">
-            ${pageItems.map(function(p) {
-              const imgUrl = p.images && p.images.length > 0 ? p.images[0] : '';
-              const priceVal = (p.price || 0).toFixed(2);
-              const colorStr = (p.colors || []).join(', ');
-              return `
-                <div class="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 shadow-sm flex flex-col">
-                  <div class="h-56 bg-gray-200 overflow-hidden relative">
-                    <img src="${imgUrl}" class="w-full h-full object-cover">
-                  </div>
-                  <div class="p-4 space-y-1">
-                    <span class="text-[10px] font-bold text-pink-500 uppercase">${p.category}</span>
-                    <h3 class="font-bold text-sm text-gray-900">${p.name}</h3>
-                    <div class="flex justify-between items-center pt-2">
-                      <span class="font-extrabold text-base text-gray-900">$${priceVal}</span>
-                      <span class="text-xs text-gray-500 font-medium">Colores: ${colorStr}</span>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-          <div class="text-center pt-4 border-t text-xs text-gray-400">
-            ¡Realiza tu pedido o consulta disponibilidad al instante!
-          </div>
-        `;
-
-        document.body.appendChild(tempContainer);
-
-        try {
-          const canvas = await html2canvas(tempContainer, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-          const link = document.createElement('a');
-          link.download = `Catalogo-MiBoutique-Pagina-${i + 1}.png`;
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-        } catch(err) {
-          console.error(err);
+    function checkAdminSession() {
+      try {
+        const exp = localStorage.getItem(ADMIN_SESSION_KEY);
+        if (exp && Date.now() < parseInt(exp, 10)) {
+          isAdminAuthenticated = true;
+          return true;
         }
-
-        document.body.removeChild(tempContainer);
-        await new Promise(function(r) { setTimeout(r, 600); });
+        isAdminAuthenticated = false;
+        localStorage.removeItem(ADMIN_SESSION_KEY);
+      } catch (e) {
+        isAdminAuthenticated = false;
       }
+      return false;
+    }
 
-      showToast(`¡Se generaron ${totalPages} páginas de revista con éxito!`);
+    function getCategorySizesList(category) {
+      if (category === 'Pantalones') {
+        const numSizes = [];
+        for (let i = 1; i <= 42; i++) {
+          numSizes.push(String(i));
+        }
+        return numSizes;
+      }
+      return ['S', 'M', 'L', 'XL', 'Unique'];
+    }
+
+    function initStorage() {
+      try {
+        sellerWhatsapp = localStorage.getItem(WHATSAPP_KEY) || '';
+        const waInput = document.getElementById('admin-whatsapp-input');
+        if (waInput) waInput.value = sellerWhatsapp;
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved !== null) {
+          products = JSON.parse(saved);
+        } else {
+          products = [
+            {
+              id: 'prod_' + Date.now() + '_1',
+              name: 'Vestido Satinado Gala',
+              category: 'Vestidos',
+              price: 38.00,
+              colors: ['Rosa Pastel', 'Negro'],
+              sizes: { S: 2, M: 3, L: 1, XL: 0, Unique: 0 },
+              images: [],
+              active: true
+            },
+            {
+              id: 'prod_' + Date.now() + '_2',
+              name: 'Jean Corte Recto Clásico',
+              category: 'Pantalones',
+              price: 42.00,
+              colors: ['Azul Índigo', 'Celeste'],
+              sizes: { '28': 2, '30': 4, '32': 3 },
+              images: [],
+              active: true
+            },
+            {
+              id: 'prod_' + Date.now() + '_3',
+              name: 'Camisa Lino Casual',
+              category: 'Camisas',
+              price: 25.00,
+              colors: ['Blanco', 'Beige'],
+              sizes: { S: 3, M: 2, L: 2, XL: 1, Unique: 0 },
+              images: [],
+              active: true
+            }
+          ];
+          saveProductsToDisk();
+        }
+      } catch (e) {
+        console.error('Error inicializando storage:', e);
+        products = [];
+      }
+    }
+
+    function saveProductsToDisk() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      } catch (e) {
+        showToast('Almacenamiento lleno: usa imágenes más ligeras');
+      }
+    }
+
+    function saveAndSync(rerenderAdmin) {
+      saveProductsToDisk();
+      renderPublicCatalog();
+      if (rerenderAdmin) {
+        renderAdminCards();
+      } else {
+        updateAdminStats();
+      }
+    }
+
+    window.saveWhatsappNumber = function() {
+      const raw = (document.getElementById('admin-whatsapp-input').value || '').replace(/[^0-9]/g, '');
+      sellerWhatsapp = raw;
+      document.getElementById('admin-whatsapp-input').value = raw;
+      try {
+        localStorage.setItem(WHATSAPP_KEY, raw);
+        showToast(raw ? 'Número de WhatsApp guardado' : 'Número de WhatsApp borrado');
+      } catch (e) {
+        showToast('Error al guardar el número');
+      }
     };
 
-    function getFilteredProducts() {
-      const searchInput = document.getElementById('public-search');
-      const search = (searchInput ? searchInput.value : '').toLowerCase();
-      return products.filter(function(p) {
-        const matchCat = currentCategoryFilter === 'Todos' || p.category === currentCategoryFilter;
-        const matchSearch = p.name.toLowerCase().includes(search);
-        return matchCat && matchSearch;
-      });
-    }
+    // NAVEGACIÓN ENTRE MODOS
+    window.setMode = function(mode) {
+      currentMode = mode;
+      const publicView = document.getElementById('public-view');
+      const adminView = document.getElementById('admin-view');
+      const toggleText = document.getElementById('btn-toggle-text');
+
+      if (mode === 'admin') {
+        publicView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        toggleText.textContent = 'Ver Catálogo';
+        document.getElementById('admin-whatsapp-input').value = sellerWhatsapp;
+        renderAdminCards();
+      } else {
+        adminView.classList.add('hidden');
+        publicView.classList.remove('hidden');
+        toggleText.textContent = 'Admin';
+        renderPublicCatalog();
+      }
+      refreshIcons();
+    };
 
     window.requestAdminAccess = function() {
       if (currentMode === 'admin') {
         setMode('public');
-        isAdminAuthenticated = false;
         return;
       }
-      
-      if (isAdminAuthenticated) {
+      if (checkAdminSession()) {
         setMode('admin');
       } else {
         document.getElementById('password-modal').classList.remove('hidden');
@@ -465,469 +503,637 @@
       const pass = document.getElementById('admin-password-input').value;
       if (pass === 'gomara22') {
         isAdminAuthenticated = true;
+        localStorage.setItem(ADMIN_SESSION_KEY, String(Date.now() + TWO_HOURS_MS));
         closePasswordModal();
         setMode('admin');
-        showToast("Bienvenido Administrador");
+        showToast('Bienvenido Administrador (Sesión activa por 2 horas)');
       } else {
-        showToast("Contraseña incorrecta");
+        showToast('Contraseña incorrecta');
         document.getElementById('admin-password-input').value = '';
       }
     };
 
-    window.setMode = function(mode) {
-      currentMode = mode;
-      const viewPublic = document.getElementById('view-public');
-      const viewAdmin = document.getElementById('view-admin');
-      const btnPublic = document.getElementById('nav-btn-public');
-      const btnAdmin = document.getElementById('nav-btn-admin');
-      const modeBtnText = document.getElementById('mode-btn-text');
-
-      if (viewPublic && viewAdmin) {
-        if (mode === 'public') {
-          viewPublic.classList.remove('hidden');
-          viewAdmin.classList.add('hidden');
-
-          if (btnPublic) btnPublic.className = "flex flex-col items-center space-y-0.5 text-brand-500";
-          if (btnAdmin) btnAdmin.className = "flex flex-col items-center space-y-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200";
-          if (modeBtnText) modeBtnText.textContent = "Admin";
-        } else {
-          viewPublic.classList.add('hidden');
-          viewAdmin.classList.remove('hidden');
-
-          if (btnAdmin) btnAdmin.className = "flex flex-col items-center space-y-0.5 text-brand-500";
-          if (btnPublic) btnPublic.className = "flex flex-col items-center space-y-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200";
-          if (modeBtnText) modeBtnText.textContent = "Ver Catálogo";
-        }
-      }
-      updateHeaderBadges();
-    };
-
-    function updateHeaderBadges() {
-      const badge = document.getElementById('header-mode-badge');
-      if (badge) {
-        if (currentMode === 'public') {
-          badge.textContent = "Catálogo Revista";
-          badge.className = "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-100 text-brand-600 dark:bg-brand-900/50 dark:text-brand-300 font-semibold";
-        } else {
-          badge.textContent = "Administración";
-          badge.className = "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 font-semibold";
-        }
-      }
-    }
-
-    window.renderCategoryPills = function() {
-      const container = document.getElementById('category-pills');
-      if (!container) return;
-      const categories = ["Todos", "Vestidos", "Blusas/Tops", "Pantalones", "Calzado", "Accesorios"];
-      
-      container.innerHTML = categories.map(function(cat) {
-        const isActive = currentCategoryFilter === cat;
-        const activeClass = isActive 
-          ? 'bg-brand-500 text-white shadow-sm' 
-          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50';
-        return `
-          <button onclick="filterCategory('${cat}')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeClass}">
-            ${cat}
-          </button>
-        `;
-      }).join('');
-    };
-
-    window.filterCategory = function(cat) {
+    // FILTROS Y CATÁLOGO PÚBLICO
+    window.setCategoryFilter = function(cat) {
       currentCategoryFilter = cat;
-      renderCategoryPills();
+      document.querySelectorAll('.cat-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.className = 'cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-600 text-white shadow-sm whitespace-nowrap transition-all';
+        } else {
+          btn.className = 'cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:border-brand-400 whitespace-nowrap transition-all';
+        }
+      });
       renderPublicCatalog();
     };
 
     window.renderPublicCatalog = function() {
-      const grid = document.getElementById('public-catalog-grid');
-      if (!grid) return;
-      const filtered = getFilteredProducts();
+      const grid = document.getElementById('public-grid');
+      const emptyState = document.getElementById('public-empty-state');
+      const query = (document.getElementById('search-input').value || '').toLowerCase().trim();
+
+      const filtered = products.filter(function(p) {
+        if (p.active !== true) return false;
+        const matchesCat = currentCategoryFilter === 'Todos' || p.category === currentCategoryFilter;
+        const matchesSearch = !query ||
+          (p.name || '').toLowerCase().includes(query) ||
+          (p.colors && p.colors.some(function(c) { return c.toLowerCase().includes(query); }));
+        return matchesCat && matchesSearch;
+      });
 
       if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-4 text-center py-8 text-gray-400">
-            <i class="fa-solid fa-shirt text-3xl mb-2 opacity-50"></i>
-            <p class="text-xs">No se encontraron prendas disponibles.</p>
-          </div>
-        `;
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        refreshIcons();
         return;
       }
 
+      emptyState.classList.add('hidden');
       grid.innerHTML = filtered.map(function(p) {
         const sizesObj = p.sizes || {};
-        const totalStock = Object.values(sizesObj).reduce(function(a, b) { return a + b; }, 0);
+        const validKeys = getCategorySizesList(p.category);
+        const totalStock = validKeys.reduce(function(acc, k) { return acc + (sizesObj[k] || 0); }, 0);
         const inStock = totalStock > 0;
-        const coverImg = p.images && p.images.length > 0 ? p.images[0] : '';
+        const coverImg = p.images && p.images.length > 0 ? p.images[0] : 'https://placehold.co/400x500/fdf2f8/db2777?text=Mi+Boutique';
         const photosCount = p.images ? p.images.length : 0;
-        const priceVal = (p.price || 0).toFixed(2);
+
+        const colorDots = (p.colors && p.colors.length > 0 ? p.colors : ['Único']).slice(0, 3).map(function(c) {
+          return '<span class="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[10px] font-medium text-gray-600 dark:text-gray-300">' + c + '</span>';
+        }).join('');
 
         return `
-          <div onclick="openProductModal('${p.id}')" class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col cursor-pointer hover:shadow-md transition-all">
-            <div class="relative h-40 bg-gray-100 dark:bg-gray-900 overflow-hidden">
-              <img src="${coverImg}" class="w-full h-full object-cover">
-              ${!inStock ? '<span class="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase">Agotado</span>' : ''}
-              ${photosCount > 1 ? '<span class="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-images mr-1"></i>' + photosCount + '</span>' : ''}
+          <div onclick="openProductModal('${p.id}')" class="group bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col">
+            <div class="relative aspect-[4/5] bg-gray-100 dark:bg-gray-800 overflow-hidden">
+              <img src="${coverImg}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 dark:bg-gray-900/95 text-gray-800 dark:text-gray-200 shadow-sm">
+                ${p.category}
+              </span>
+              ${photosCount > 1 ? `<span class="absolute bottom-3 right-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/65 text-white backdrop-blur-sm">${photosCount} fotos</span>` : ''}
+              ${!inStock ? `<div class="absolute inset-0 bg-black/45 flex items-center justify-center"><span class="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold uppercase tracking-wide">Agotado</span></div>` : ''}
             </div>
-            <div class="p-3 flex-1 flex flex-col justify-between">
+            <div class="p-4 flex-1 flex flex-col justify-between">
               <div>
-                <span class="text-[9px] font-semibold text-brand-500 uppercase">${p.category}</span>
-                <h3 class="font-bold text-xs text-gray-800 dark:text-gray-100 line-clamp-1">${p.name}</h3>
+                <h3 class="font-bold text-gray-900 dark:text-white text-base line-clamp-1 group-hover:text-brand-600 transition-colors">${p.name}</h3>
+                <div class="flex flex-wrap gap-1 mt-1.5">${colorDots}</div>
               </div>
-              <div class="mt-2 flex items-center justify-between">
-                <span class="font-extrabold text-sm text-gray-900 dark:text-white">$${priceVal}</span>
-                <span class="text-[10px] text-gray-400">${totalStock} disp.</span>
+              <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-2">
+                <span class="text-lg font-extrabold text-brand-600">$${Number(p.price || 0).toFixed(2)}</span>
+                <span class="text-[11px] font-semibold ${inStock ? 'text-green-600 dark:text-green-400' : 'text-red-500'}">
+                  ${inStock ? totalStock + ' disp.' : 'Sin stock'}
+                </span>
               </div>
             </div>
           </div>
         `;
       }).join('');
+      refreshIcons();
     };
 
+    // MODAL DE DETALLE PÚBLICO Y COMPARTIR WHATSAPP
     window.openProductModal = function(id) {
-      if (currentMode === 'admin') return;
-      const p = products.find(function(prod) { return prod.id === id; });
+      const p = products.find(function(item) { return item.id === id; });
       if (!p) return;
-
       activeModalProduct = p;
-      activeModalImageIndex = 0;
-      updateModalImageDisplay();
+      activeModalImgIndex = 0;
 
-      document.getElementById('modal-category').textContent = p.category;
+      document.getElementById('modal-cat').textContent = p.category;
       document.getElementById('modal-title').textContent = p.name;
-      document.getElementById('modal-price').textContent = `$${(p.price || 0).toFixed(2)}`;
+      document.getElementById('modal-price').textContent = '$' + Number(p.price || 0).toFixed(2);
 
       const colorsDiv = document.getElementById('modal-colors');
-      colorsDiv.innerHTML = (p.colors || []).map(function(c) {
-        return '<span class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-[10px] font-medium">' + c + '</span>';
+      colorsDiv.innerHTML = (p.colors && p.colors.length > 0 ? p.colors : ['Único']).map(function(c) {
+        return '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">' + c + '</span>';
       }).join('');
 
       const sizesDiv = document.getElementById('modal-sizes');
-      sizesDiv.innerHTML = Object.entries(p.sizes || {}).map(function(entry) {
-        const size = entry[0];
-        const count = entry[1];
-        const borderClass = count > 0 ? 'border-brand-200 bg-brand-50/50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300' : 'border-gray-200 bg-gray-50 text-gray-400 opacity-50';
-        return '<div class="p-2 rounded-xl text-center border ' + borderClass + '">' +
-          '<span class="block text-[10px] font-bold uppercase">' + size + '</span>' +
-          '<span class="text-xs font-semibold">' + (count > 0 ? count + ' und' : 'Sin stock') + '</span>' +
-        '</div>';
-      }).join('');
+      const validKeys = getCategorySizesList(p.category);
+      const displayKeys = p.category === 'Pantalones'
+        ? validKeys.filter(function(sz) { return (p.sizes && p.sizes[sz] > 0); })
+        : validKeys;
 
+      if (p.category === 'Pantalones' && displayKeys.length === 0) {
+        sizesDiv.innerHTML = '<div class="col-span-3 sm:col-span-6 p-2.5 rounded-xl text-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 text-xs font-semibold">Sin tallas disponibles</div>';
+      } else {
+        sizesDiv.innerHTML = displayKeys.map(function(size) {
+          const count = (p.sizes && p.sizes[size]) || 0;
+          const label = size === 'Unique' ? 'Única' : (p.category === 'Pantalones' ? 'Talla ' + size : size);
+          const borderClass = count > 0
+            ? 'border-brand-200 bg-brand-50/70 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300'
+            : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 opacity-50';
+          return '<div class="p-2 rounded-xl text-center border ' + borderClass + '">' +
+            '<span class="block text-[10px] font-bold uppercase">' + label + '</span>' +
+            '<span class="text-xs font-semibold">' + (count > 0 ? count + ' und' : 'Agotado') + '</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      updateModalGallery();
       document.getElementById('product-modal').classList.remove('hidden');
+      refreshIcons();
     };
 
-    window.updateModalImageDisplay = function() {
-      if (!activeModalProduct || !activeModalProduct.images || activeModalProduct.images.length === 0) return;
-      const imgTag = document.getElementById('modal-img');
-      const counterTag = document.getElementById('modal-image-counter');
-      
-      imgTag.src = activeModalProduct.images[activeModalImageIndex];
-      counterTag.textContent = (activeModalImageIndex + 1) + '/' + activeModalProduct.images.length;
-    };
+    function updateModalGallery() {
+      if (!activeModalProduct) return;
+      const imgs = activeModalProduct.images && activeModalProduct.images.length > 0
+        ? activeModalProduct.images
+        : ['https://placehold.co/400x500/fdf2f8/db2777?text=Mi+Boutique'];
 
-    window.nextModalImage = function() {
+      document.getElementById('modal-img').src = imgs[activeModalImgIndex] || imgs[0];
+
+      const prevBtn = document.getElementById('modal-prev-img');
+      const nextBtn = document.getElementById('modal-next-img');
+      const thumbsDiv = document.getElementById('modal-thumbs');
+
+      if (imgs.length > 1) {
+        prevBtn.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+        thumbsDiv.classList.remove('hidden');
+        thumbsDiv.innerHTML = imgs.map(function(src, idx) {
+          const activeRing = idx === activeModalImgIndex ? 'ring-2 ring-brand-500 scale-110' : 'opacity-65 hover:opacity-100';
+          return '<img src="' + src + '" onclick="setModalImage(' + idx + ')" class="w-8 h-8 rounded-full object-cover cursor-pointer transition-all ' + activeRing + '">';
+        }).join('');
+      } else {
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+        thumbsDiv.classList.add('hidden');
+      }
+    }
+
+    window.changeModalImage = function(step) {
       if (!activeModalProduct || !activeModalProduct.images) return;
-      activeModalImageIndex = (activeModalImageIndex + 1) % activeModalProduct.images.length;
-      updateModalImageDisplay();
+      const total = activeModalProduct.images.length;
+      if (total <= 1) return;
+      activeModalImgIndex = (activeModalImgIndex + step + total) % total;
+      updateModalGallery();
     };
 
-    window.prevModalImage = function() {
-      if (!activeModalProduct || !activeModalProduct.images) return;
-      activeModalImageIndex = (activeModalImageIndex - 1 + activeModalProduct.images.length) % activeModalProduct.images.length;
-      updateModalImageDisplay();
+    window.setModalImage = function(idx) {
+      activeModalImgIndex = idx;
+      updateModalGallery();
     };
 
-    window.closeModal = function() {
+    window.closeProductModal = function() {
       document.getElementById('product-modal').classList.add('hidden');
     };
 
-    window.switchAdminTab = function(tab) {
-      const tabStock = document.getElementById('admin-tab-stock');
-      const tabAdd = document.getElementById('admin-tab-add');
-      const btnStock = document.getElementById('tab-btn-stock');
-      const btnAdd = document.getElementById('tab-btn-add');
+    // SUB-MODAL WHATSAPP
+    window.openWhatsappShareModal = function() {
+      if (!activeModalProduct) return;
+      const p = activeModalProduct;
+      const validKeys = getCategorySizesList(p.category);
+      const availSizes = validKeys.filter(function(sz) { return (p.sizes && p.sizes[sz] > 0); });
+      const sizesText = availSizes.length > 0
+        ? availSizes.map(function(sz) { return sz === 'Unique' ? 'Única' : sz; }).join(', ')
+        : 'Consultar disponibilidad';
+      const colorsText = (p.colors && p.colors.length > 0) ? p.colors.join(', ') : 'Único';
 
-      if (tab === 'stock') {
-        tabStock.classList.remove('hidden');
-        tabAdd.classList.add('hidden');
-        btnStock.className = "flex-1 py-1.5 rounded-lg text-center bg-white dark:bg-gray-700 font-semibold shadow-sm";
-        btnAdd.className = "flex-1 py-1.5 rounded-lg text-center text-gray-500 dark:text-gray-400";
-      } else {
-        tabStock.classList.add('hidden');
-        tabAdd.classList.remove('hidden');
-        btnAdd.className = "flex-1 py-1.5 rounded-lg text-center bg-white dark:bg-gray-700 font-semibold shadow-sm";
-        btnStock.className = "flex-1 py-1.5 rounded-lg text-center text-gray-500 dark:text-gray-400";
+      const msg = '¡Hola! Me interesa este producto de *Mi Boutique*:\n\n' +
+        '• *Prenda:* ' + p.name + '\n' +
+        '• *Categoría:* ' + p.category + '\n' +
+        '• *Precio:* $' + Number(p.price || 0).toFixed(2) + '\n' +
+        '• *Colores:* ' + colorsText + '\n' +
+        '• *Tallas disponibles:* ' + sizesText + '\n\n' +
+        '¿Me confirmas disponibilidad, por favor?';
+
+      document.getElementById('whatsapp-message-preview').value = msg;
+
+      const encodedMsg = encodeURIComponent(msg);
+      const cleanPhone = (sellerWhatsapp || '').replace(/[^0-9]/g, '');
+      const waSchemeUrl = cleanPhone
+        ? 'whatsapp://send?phone=' + cleanPhone + '&text=' + encodedMsg
+        : 'whatsapp://send?text=' + encodedMsg;
+
+      document.getElementById('whatsapp-direct-link').setAttribute('href', waSchemeUrl);
+      document.getElementById('whatsapp-modal').classList.remove('hidden');
+      refreshIcons();
+    };
+
+    window.closeWhatsappModal = function() {
+      document.getElementById('whatsapp-modal').classList.add('hidden');
+    };
+
+    window.copyWhatsappMessage = function() {
+      const textarea = document.getElementById('whatsapp-message-preview');
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('¡Mensaje copiado! Pégalo en WhatsApp');
+      } catch (e) {
+        showToast('No se pudo copiar automáticamente');
       }
     };
 
-    window.renderAdminInventory = function() {
-      const list = document.getElementById('admin-inventory-list');
-      if (!list) return;
+    // =========================================================
+    // PANEL ADMINISTRADOR INTERACTIVO
+    // =========================================================
+    function updateAdminStats() {
+      let activeCount = 0;
+      products.forEach(function(p) {
+        if (p.active === true) activeCount++;
+      });
+      document.getElementById('stat-active-count').textContent = activeCount;
+      document.getElementById('stat-total-cards').textContent = products.length;
+    }
 
-      let totalItemsCount = 0;
-      let outOfStockCount = 0;
+    window.addNewBlankCard = function() {
+      products.unshift({
+        id: 'prod_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        name: 'Nueva Prenda',
+        category: 'Camisas',
+        price: 0,
+        colors: ['Único'],
+        sizes: {},
+        images: [],
+        active: false
+      });
+      saveAndSync(true);
+      showToast('Nuevo cuadro creado');
+    };
 
-      list.innerHTML = products.map(function(p) {
+    window.deleteCard = function(id) {
+      products = products.filter(function(item) { return item.id !== id; });
+      saveAndSync(true);
+      showToast('Cuadro eliminado');
+    };
+
+    window.toggleCardActive = function(id) {
+      const p = products.find(function(item) { return item.id === id; });
+      if (!p) return;
+      readCardInputsToProduct(p);
+      p.active = !p.active;
+      saveAndSync(true);
+      showToast(p.active ? '¡Publicado! Visible en el catálogo' : 'Oculto (Borrador)');
+    };
+
+    window.removeImageFromCard = function(id, imgIdx) {
+      const p = products.find(function(item) { return item.id === id; });
+      if (!p || !p.images) return;
+      readCardInputsToProduct(p);
+      p.images.splice(imgIdx, 1);
+      saveAndSync(true);
+      showToast('Foto eliminada');
+    };
+
+    // Compresión automática de imagen (máx 800px ancho, JPEG 0.72)
+    function compressImageFile(file) {
+      return new Promise(function(resolve) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.72));
+          };
+          img.onerror = function() { resolve(null); };
+          img.src = event.target.result;
+        };
+        reader.onerror = function() { resolve(null); };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function processFilesForCard(id, fileList) {
+      const p = products.find(function(item) { return item.id === id; });
+      if (!p || !fileList || fileList.length === 0) return;
+
+      readCardInputsToProduct(p);
+      showToast('Optimizando fotos...');
+
+      if (!p.images) p.images = [];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (!file.type.startsWith('image/')) continue;
+        const compressed = await compressImageFile(file);
+        if (compressed) {
+          p.images.push(compressed);
+        }
+      }
+
+      saveAndSync(true);
+      showToast('¡Imágenes agregadas correctamente!');
+    }
+
+    window.handleCardFileInput = function(id, inputEl) {
+      processFilesForCard(id, inputEl.files);
+    };
+
+    window.handleCardDragOver = function(e, zoneEl) {
+      e.preventDefault();
+      zoneEl.classList.add('drag-over');
+    };
+
+    window.handleCardDragLeave = function(e, zoneEl) {
+      e.preventDefault();
+      zoneEl.classList.remove('drag-over');
+    };
+
+    window.handleCardDrop = function(e, id, zoneEl) {
+      e.preventDefault();
+      zoneEl.classList.remove('drag-over');
+      if (e.dataTransfer && e.dataTransfer.files) {
+        processFilesForCard(id, e.dataTransfer.files);
+      }
+    };
+
+    function readCardInputsToProduct(p) {
+      const id = p.id;
+      const nameEl = document.getElementById('card-name-' + id);
+      const priceEl = document.getElementById('card-price-' + id);
+      const catEl = document.getElementById('card-cat-' + id);
+      const colorsEl = document.getElementById('card-colors-' + id);
+
+      if (nameEl) p.name = nameEl.value.trim() || 'Prenda sin nombre';
+      if (priceEl) p.price = parseFloat(priceEl.value) || 0;
+      if (catEl) p.category = catEl.value;
+      if (colorsEl) {
+        const rawColors = colorsEl.value.trim();
+        p.colors = rawColors ? rawColors.split(',').map(function(c) { return c.trim(); }) : ['Único'];
+      }
+
+      if (!p.sizes) p.sizes = {};
+      const validKeys = getCategorySizesList(p.category);
+      validKeys.forEach(function(sz) {
+        const szEl = document.getElementById('card-size-' + id + '-' + sz);
+        if (szEl) {
+          p.sizes[sz] = Math.max(0, parseInt(szEl.value, 10) || 0);
+        }
+      });
+    }
+
+    window.handleCardCategoryChange = function(id, newCat) {
+      const p = products.find(function(item) { return item.id === id; });
+      if (!p) return;
+      readCardInputsToProduct(p);
+      p.category = newCat;
+      if (!p.sizes) p.sizes = {};
+      saveAndSync(true);
+    };
+
+    window.saveCardChanges = function(id) {
+      const p = products.find(function(item) { return item.id === id; });
+      if (!p) return;
+      readCardInputsToProduct(p);
+      saveAndSync(true);
+      showToast('¡Cambios guardados!');
+    };
+
+    window.renderAdminCards = function() {
+      const grid = document.getElementById('admin-cards-grid');
+      updateAdminStats();
+
+      grid.innerHTML = products.map(function(p) {
         const sizesObj = p.sizes || {};
-        const totalStock = Object.values(sizesObj).reduce(function(a, b) { return a + b; }, 0);
-        totalItemsCount += totalStock;
-        if (totalStock === 0) outOfStockCount++;
-        const coverImg = p.images && p.images.length > 0 ? p.images[0] : '';
-        const photosCount = p.images ? p.images.length : 0;
-        const priceVal = (p.price || 0).toFixed(2);
+        const validKeys = getCategorySizesList(p.category);
+        const cardBorder = p.active
+          ? 'border-green-400 dark:border-green-600 ring-1 ring-green-400/30'
+          : 'border-gray-200 dark:border-gray-800';
 
-        const sizesHtml = Object.entries(sizesObj).map(function(entry) {
-          const sz = entry[0];
-          const qty = entry[1];
+        const statusBadge = p.active
+          ? `<button type="button" onclick="toggleCardActive('${p.id}')" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-200 transition-colors">
+               <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Publicado (Visible)
+             </button>`
+          : `<button type="button" onclick="toggleCardActive('${p.id}')" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 transition-colors">
+               <span class="w-2 h-2 rounded-full bg-gray-400"></span> Oculto (Borrador)
+             </button>`;
+
+        const thumbsHtml = (p.images && p.images.length > 0)
+          ? `<div class="flex items-center gap-2 overflow-x-auto pb-1">
+              ${p.images.map(function(src, idx) {
+                return `
+                  <div class="relative w-14 h-16 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shrink-0">
+                    <img src="${src}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeImageFromCard('${p.id}', ${idx})" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white text-[10px] flex items-center justify-center">×</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>`
+          : '';
+
+        const sizesInputsHtml = validKeys.map(function(sz) {
+          const label = sz === 'Unique' ? 'Única' : sz;
+          const val = sizesObj[sz] || 0;
           return `
-            <div class="flex flex-col items-center bg-gray-50 dark:bg-gray-900/50 p-1 rounded-lg">
-              <span class="font-bold text-gray-400 uppercase">${sz}</span>
-              <span class="font-extrabold text-gray-800 dark:text-gray-200 my-0.5">${qty}</span>
-              <div class="flex space-x-1">
-                <button onclick="updateStock('${p.id}', '${sz}', -1)" class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-xs hover:bg-red-200 hover:text-red-700">-</button>
-                <button onclick="updateStock('${p.id}', '${sz}', 1)" class="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-xs hover:bg-green-200 hover:text-green-700">+</button>
+            <div class="bg-gray-50 dark:bg-gray-900/60 p-1 rounded-lg border border-gray-100 dark:border-gray-700 text-center">
+              <span class="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">${label}</span>
+              <input type="number" min="0" id="card-size-${p.id}-${sz}" value="${val}" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-xs font-bold text-center py-0.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+            </div>
+          `;
+        }).join('');
+
+        const sizesGridClass = p.category === 'Pantalones'
+          ? 'grid grid-cols-6 gap-1 max-h-40 overflow-y-auto pr-1'
+          : 'grid grid-cols-5 gap-1';
+
+        return `
+          <div id="admin-card-${p.id}" class="bg-white dark:bg-gray-900 rounded-2xl border ${cardBorder} shadow-sm overflow-hidden flex flex-col transition-all">
+            <!-- Cabecera del Cuadro -->
+            <div class="px-4 py-2.5 bg-gray-50/80 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-2">
+              ${statusBadge}
+              <button type="button" onclick="deleteCard('${p.id}')" title="Eliminar" class="text-gray-400 hover:text-red-500 p-1 rounded-lg transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="p-4 space-y-3 flex-1 flex flex-col">
+              <!-- Zona Drag & Drop -->
+              <div
+                ondragover="handleCardDragOver(event, this)"
+                ondragleave="handleCardDragLeave(event, this)"
+                ondrop="handleCardDrop(event, '${p.id}', this)"
+                onclick="document.getElementById('file-input-${p.id}').click()"
+                class="border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-brand-500 rounded-xl p-3 text-center cursor-pointer transition-all bg-gray-50/50 dark:bg-gray-800/30"
+              >
+                <input type="file" id="file-input-${p.id}" accept="image/*" multiple class="hidden" onchange="handleCardFileInput('${p.id}', this)">
+                <i data-lucide="image-plus" class="w-6 h-6 mx-auto text-brand-500 mb-1"></i>
+                <p class="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Arrastra fotos aquí o <span class="text-brand-600 underline">toca para subir</span></p>
+              </div>
+
+              ${thumbsHtml}
+
+              <!-- Campos Editables -->
+              <div class="space-y-2.5 flex-1">
+                <div>
+                  <label class="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">Nombre de la prenda</label>
+                  <input type="text" id="card-name-${p.id}" value="${(p.name || '').replace(/"/g, '&quot;')}" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">Precio ($ USD)</label>
+                    <input type="number" step="0.01" min="0" id="card-price-${p.id}" value="${p.price || 0}" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                  </div>
+                  <div>
+                    <label class="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">Categoría</label>
+                    <select id="card-cat-${p.id}" onchange="handleCardCategoryChange('${p.id}', this.value)" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
+                      <option value="Camisas" ${p.category === 'Camisas' ? 'selected' : ''}>Camisas</option>
+                      <option value="Pantalones" ${p.category === 'Pantalones' ? 'selected' : ''}>Pantalones</option>
+                      <option value="Vestidos" ${p.category === 'Vestidos' ? 'selected' : ''}>Vestidos</option>
+                      <option value="Calzado" ${p.category === 'Calzado' ? 'selected' : ''}>Calzado</option>
+                      <option value="Accesorios" ${p.category === 'Accesorios' ? 'selected' : ''}>Accesorios</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">Colores (separados por coma)</label>
+                  <input type="text" id="card-colors-${p.id}" value="${(p.colors || []).join(', ').replace(/"/g, '&quot;')}" placeholder="Ej: Negro, Blanco, Rosa" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-brand-500">
+                </div>
+
+                <div>
+                  <label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">
+                    ${p.category === 'Pantalones' ? 'Tallas Numéricas (1 al 42)' : 'Inventario por Talla'}
+                  </label>
+                  <div class="${sizesGridClass}">
+                    ${sizesInputsHtml}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botón Guardar -->
+              <button type="button" onclick="saveCardChanges('${p.id}')" class="w-full py-2.5 rounded-xl bg-gray-900 hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500 text-white text-xs font-bold shadow-sm transition-colors mt-2">
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      refreshIcons();
+    };
+
+    // =========================================================
+    // EXPORTADOR DE REVISTA DIGITAL MULTI-PÁGINA (PNG)
+    // =========================================================
+    window.openMagazineExporter = function() {
+      const activeProducts = products.filter(function(p) { return p.active === true; });
+      const container = document.getElementById('magazine-preview-container');
+      const infoText = document.getElementById('magazine-page-info');
+      const downloadBtn = document.getElementById('btn-download-all-pages');
+
+      if (activeProducts.length === 0) {
+        container.innerHTML = '<div class="py-12 text-center text-gray-500 text-sm">No hay prendas activas publicadas para generar la revista.</div>';
+        infoText.textContent = '0 páginas';
+        downloadBtn.classList.add('hidden');
+        document.getElementById('magazine-modal').classList.remove('hidden');
+        return;
+      }
+
+      downloadBtn.classList.remove('hidden');
+      const ITEMS_PER_PAGE = 4;
+      const pages = [];
+      for (let i = 0; i < activeProducts.length; i += ITEMS_PER_PAGE) {
+        pages.push(activeProducts.slice(i, i + ITEMS_PER_PAGE));
+      }
+
+      infoText.textContent = pages.length + (pages.length === 1 ? ' página generada' : ' páginas generadas') + ' (' + activeProducts.length + ' prendas)';
+
+      container.innerHTML = pages.map(function(pageItems, pageIndex) {
+        const cardsHtml = pageItems.map(function(p) {
+          const cover = p.images && p.images.length > 0 ? p.images[0] : 'https://placehold.co/400x500/fdf2f8/db2777?text=Mi+Boutique';
+          const validKeys = getCategorySizesList(p.category);
+          const availSizes = validKeys.filter(function(k) { return (p.sizes && p.sizes[k] > 0); });
+          const sizeStr = availSizes.length > 0
+            ? availSizes.map(function(s) { return s === 'Unique' ? 'Única' : s; }).join(', ')
+            : 'Consultar';
+
+          return `
+            <div style="background:#ffffff; border-radius:16px; overflow:hidden; border:1px solid #fbcfe8; display:flex; flex-direction:column;">
+              <div style="height:220px; background:#fdf2f8; overflow:hidden;">
+                <img src="${cover}" style="width:100%; height:100%; object-fit:cover;">
+              </div>
+              <div style="padding:12px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <span style="font-size:9px; font-weight:700; text-transform:uppercase; color:#db2777;">${p.category}</span>
+                  <h4 style="font-size:14px; font-weight:800; color:#111827; margin:2px 0;">${p.name}</h4>
+                  <p style="font-size:11px; color:#6b7280; margin:0;">Tallas: <strong>${sizeStr}</strong></p>
+                </div>
+                <div style="margin-top:8px; padding-top:6px; border-top:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:16px; font-weight:900; color:#db2777;">$${Number(p.price || 0).toFixed(2)}</span>
+                  <span style="font-size:10px; color:#9ca3af;">${(p.colors || []).slice(0, 2).join(' / ')}</span>
+                </div>
               </div>
             </div>
           `;
         }).join('');
 
         return `
-          <div class="bg-white dark:bg-gray-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-2">
-            <div class="flex items-center space-x-3">
-              <div class="relative w-12 h-12">
-                <img src="${coverImg}" class="w-12 h-12 object-cover rounded-xl border border-gray-200">
-                <span class="absolute -bottom-1 -right-1 bg-brand-500 text-white text-[8px] px-1 rounded-full font-bold">${photosCount}</span>
-              </div>
-              <div class="flex-1">
-                <h4 class="font-bold text-xs text-gray-800 dark:text-gray-100">${p.name}</h4>
-                <div class="flex items-center space-x-2 text-[10px] text-gray-400">
-                  <span>${p.category}</span>
-                  <span>•</span>
-                  <span class="font-semibold text-gray-700 dark:text-gray-300">$${priceVal}</span>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="flex items-center justify-between w-full max-w-[600px]">
+              <span class="text-xs font-bold text-gray-600 dark:text-gray-300">Página ${pageIndex + 1} de ${pages.length}</span>
+              <button type="button" onclick="downloadSingleMagazinePage(${pageIndex})" class="text-xs font-bold text-brand-600 hover:underline">Descargar solo esta página</button>
+            </div>
+            <div id="mag-page-${pageIndex}" style="width:100%; max-width:600px; background:linear-gradient(135deg, #fff1f2 0%, #ffffff 50%, #fdf2f8 100%); padding:28px; border-radius:24px; box-shadow:0 10px 25px rgba(0,0,0,0.08); border:1px solid #fbcfe8;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #fbcfe8; padding-bottom:14px; margin-bottom:20px;">
+                <div>
+                  <span style="font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#db2777;">Colección Exclusiva</span>
+                  <h2 style="font-family:'Playfair Display', serif; font-size:26px; font-weight:700; color:#111827; margin:0;">Mi Boutique</h2>
+                </div>
+                <div style="text-align:right;">
+                  <span style="display:inline-block; background:#db2777; color:#ffffff; font-size:11px; font-weight:700; padding:4px 12px; border-radius:999px;">Pág. ${pageIndex + 1} / ${pages.length}</span>
                 </div>
               </div>
-              <div class="flex items-center space-x-1">
-                <button onclick="editProduct('${p.id}')" class="p-2 text-gray-400 hover:text-brand-500"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="requestDeleteProduct('${p.id}')" class="p-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+              <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;">
+                ${cardsHtml}
+              </div>
+              <div style="margin-top:20px; padding-top:12px; border-top:1px solid #fbcfe8; text-align:center; font-size:11px; color:#6b7280; font-weight:600;">
+                Catálogo Digital • Consulta disponibilidad de tallas y colores
               </div>
             </div>
-
-            <div class="grid grid-cols-6 gap-1 pt-2 border-t border-gray-100 dark:border-gray-700/50 text-[10px]">
-              ${sizesHtml}
-            </div>
           </div>
         `;
       }).join('');
 
-      document.getElementById('stat-total-items').textContent = totalItemsCount;
-      document.getElementById('stat-out-stock').textContent = outOfStockCount;
+      document.getElementById('magazine-modal').classList.remove('hidden');
+      refreshIcons();
     };
 
-    window.updateStock = function(productId, sizeKey, delta) {
-      const p = products.find(function(prod) { return prod.id === productId; });
-      if (p && p.sizes[sizeKey] !== undefined) {
-        const currentVal = p.sizes[sizeKey];
-        if (currentVal + delta >= 0) {
-          p.sizes[sizeKey] += delta;
-          saveAndSync();
-        }
+    window.closeMagazineExporter = function() {
+      document.getElementById('magazine-modal').classList.add('hidden');
+    };
+
+    window.downloadSingleMagazinePage = async function(pageIndex) {
+      const el = document.getElementById('mag-page-' + pageIndex);
+      if (!el || typeof html2canvas === 'undefined') return;
+      showToast('Generando imagen PNG de página ' + (pageIndex + 1) + '...');
+      try {
+        const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const link = document.createElement('a');
+        link.download = 'Catalogo_Mi_Boutique_Pagina_' + (pageIndex + 1) + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('¡Página ' + (pageIndex + 1) + ' descargada!');
+      } catch (err) {
+        showToast('Error al generar la imagen');
       }
     };
 
-    window.handleMultipleImagesUpload = function(e) {
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = (function(f) {
-          return function(evt) {
-            // Comprimir imagen usando canvas para evitar saturar localStorage
-            const img = new Image();
-            img.onload = function() {
-              const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 800;
-              const MAX_HEIGHT = 800;
-              let width = img.width;
-              let height = img.height;
-
-              if (width > height) {
-                if (width > MAX_WIDTH) {
-                  height *= MAX_WIDTH / width;
-                  width = MAX_WIDTH;
-                }
-              } else {
-                if (height > MAX_HEIGHT) {
-                  width *= MAX_HEIGHT / height;
-                  height = MAX_HEIGHT;
-                }
-              }
-
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, width, height);
-
-              // Comprimir a JPEG calidad 0.7 para garantizar almacenamiento ilimitado
-              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-              currentUploadedImages.push(compressedDataUrl);
-              renderImagePreviews();
-            };
-            img.src = evt.target.result;
-          };
-        })(file);
-        reader.readAsDataURL(file);
+    window.downloadAllMagazinePages = async function() {
+      const pagesEls = document.querySelectorAll('[id^="mag-page-"]');
+      if (pagesEls.length === 0) return;
+      showToast('Descargando ' + pagesEls.length + ' páginas...');
+      for (let i = 0; i < pagesEls.length; i++) {
+        await downloadSingleMagazinePage(i);
+        await new Promise(function(r) { setTimeout(r, 450); });
       }
-    };
-
-    function renderImagePreviews() {
-      const container = document.getElementById('image-previews-container');
-      if (!container) return;
-      if (currentUploadedImages.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-
-      container.innerHTML = currentUploadedImages.map(function(imgSrc, index) {
-        return `
-          <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200">
-            <img src="${imgSrc}" class="w-full h-full object-cover">
-            <button type="button" onclick="removeUploadedImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px]">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    window.removeUploadedImage = function(index) {
-      currentUploadedImages.splice(index, 1);
-      renderImagePreviews();
-    };
-
-    window.handleProductSubmit = function(e) {
-      e.preventDefault();
-      const idInput = document.getElementById('form-product-id');
-      const id = idInput ? idInput.value : '';
-      const name = document.getElementById('form-name').value;
-      const category = document.getElementById('form-category').value;
-      const price = parseFloat(document.getElementById('form-price').value) || 0;
-      const colorsInput = document.getElementById('form-colors').value;
-      const colors = colorsInput ? colorsInput.split(',').map(function(c) { return c.trim(); }) : ["Único"];
-
-      const sizes = {
-        XS: parseInt(document.getElementById('size-xs').value) || 0,
-        S: parseInt(document.getElementById('size-s').value) || 0,
-        M: parseInt(document.getElementById('size-m').value) || 0,
-        L: parseInt(document.getElementById('size-l').value) || 0,
-        XL: parseInt(document.getElementById('size-xl').value) || 0,
-        Unique: parseInt(document.getElementById('size-unique').value) || 0
-      };
-
-      let images = [...currentUploadedImages];
-      if (images.length === 0 && id) {
-        const existingProd = products.find(function(p) { return p.id === id; });
-        if (existingProd && existingProd.images) {
-          images = [...existingProd.images];
-        }
-      }
-      if (images.length === 0) {
-        images = ["https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500&auto=format&fit=crop&q=60"];
-      }
-
-      const productPayload = {
-        id: id ? id : ('prod-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)),
-        name,
-        category,
-        price,
-        colors,
-        sizes,
-        images
-      };
-
-      if (id) {
-        const index = products.findIndex(function(p) { return p.id === id; });
-        if (index !== -1) {
-          products[index] = productPayload;
-        } else {
-          products.push(productPayload);
-        }
-      } else {
-        products.push(productPayload);
-      }
-
-      saveAndSync();
-      resetForm();
-      switchAdminTab('stock');
-    };
-
-    window.editProduct = function(id) {
-      const p = products.find(function(prod) { return prod.id === id; });
-      if (!p) return;
-
-      document.getElementById('form-product-id').value = p.id;
-      document.getElementById('form-name').value = p.name;
-      document.getElementById('form-category').value = p.category;
-      document.getElementById('form-price').value = p.price;
-      document.getElementById('form-colors').value = (p.colors || []).join(', ');
-      
-      document.getElementById('size-xs').value = p.sizes.XS || 0;
-      document.getElementById('size-s').value = p.sizes.S || 0;
-      document.getElementById('size-m').value = p.sizes.M || 0;
-      document.getElementById('size-l').value = p.sizes.L || 0;
-      document.getElementById('size-xl').value = p.sizes.XL || 0;
-      document.getElementById('size-unique').value = p.sizes.Unique || 0;
-
-      currentUploadedImages = p.images ? [...p.images] : (p.image ? [p.image] : []);
-      renderImagePreviews();
-
-      document.getElementById('form-title').textContent = "Editar Prenda";
-      switchAdminTab('add');
-    };
-
-    window.requestDeleteProduct = function(id) {
-      document.getElementById('delete-target-id').value = id;
-      document.getElementById('delete-modal').classList.remove('hidden');
-    };
-
-    window.closeDeleteModal = function() {
-      document.getElementById('delete-modal').classList.add('hidden');
-    };
-
-    window.confirmDeleteProduct = function() {
-      const id = document.getElementById('delete-target-id').value;
-      if (id) {
-        products = products.filter(function(p) { return p.id !== id; });
-        saveAndSync();
-        showToast("Prenda eliminada");
-      }
-      closeDeleteModal();
-    };
-
-    window.resetForm = function() {
-      const form = document.getElementById('product-form');
-      if (form) form.reset();
-      const idField = document.getElementById('form-product-id');
-      if (idField) idField.value = '';
-      currentUploadedImages = [];
-      renderImagePreviews();
-      const formTitle = document.getElementById('form-title');
-      if (formTitle) formTitle.textContent = "Agregar Nueva Prenda";
-    };
-
-    window.showToast = function(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toast-msg').textContent = msg;
-      toast.classList.remove('opacity-0', 'pointer-events-none');
-      setTimeout(function() {
-        toast.classList.add('opacity-0', 'pointer-events-none');
-      }, 2500);
     };
 
     window.addEventListener('DOMContentLoaded', function() {
+      checkAdminSession();
       initStorage();
       setMode('public');
+      refreshIcons();
     });
   </script>
 </body>
